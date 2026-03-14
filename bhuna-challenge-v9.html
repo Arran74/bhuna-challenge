@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhuna Challenge V9</title>
+
+<style>
+body {
+background:#0b0b0b;
+color:white;
+font-family:-apple-system,BlinkMacSystemFont,Arial;
+text-align:center;
+padding:20px;
+}
+
+h1 {color:#c8102e;}
+
+.card {
+background:#1a1a1a;
+padding:18px;
+border-radius:14px;
+margin-top:18px;
+box-shadow:0 0 10px rgba(0,0,0,0.4);
+}
+
+button {
+background:#c8102e;
+border:none;
+padding:12px;
+color:white;
+font-size:16px;
+border-radius:10px;
+margin:6px;
+width:85%;
+max-width:340px;
+}
+
+textarea {
+width:90%;
+height:100px;
+border-radius:10px;
+padding:10px;
+font-size:15px;
+}
+
+.progress {
+background:#333;
+border-radius:10px;
+height:18px;
+margin-top:10px;
+}
+
+.bar {
+background:#c8102e;
+height:18px;
+width:0%;
+border-radius:10px;
+}
+
+.small {font-size:13px;opacity:0.7;}
+</style>
+</head>
+
+<body>
+
+<h1 id="title">The Bhuna Challenge 🍛</h1>
+
+<div class="card">
+<p>⭐ Points: <span id="points"></span></p>
+<p>🔥 Streak: <span id="streak"></span></p>
+<p>📅 Missions completed: <span id="missions"></span></p>
+<p>⏳ Days to exam: 62</p>
+
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+
+<p id="reward"></p>
+</div>
+
+<div class="card">
+<b>Today's Mission</b>
+<p id="mission"></p>
+<p class="small">5 minute GCSE skill builder</p>
+</div>
+
+<div class="card" id="questionCard">
+<p id="skill"></p>
+<p id="question"></p>
+<div id="answers"></div>
+</div>
+
+<div class="card" id="writingCard" style="display:none">
+<p id="writingPrompt"></p>
+<textarea id="writing"></textarea>
+<br>
+<button onclick="submitWriting()">Submit Answer</button>
+</div>
+
+<script>
+
+let points = parseInt(localStorage.getItem("points")) || 0
+let streak = parseInt(localStorage.getItem("streak")) || 0
+let missions = parseInt(localStorage.getItem("missions")) || 0
+
+document.getElementById("points").innerText = points
+document.getElementById("streak").innerText = streak
+document.getElementById("missions").innerText = missions
+
+const plan=[
+"Find the best evidence",
+"Identify strong verbs",
+"Explain language effects",
+"Spot imagery",
+"Improve sentence strength",
+"Persuasive techniques",
+"Mini exam practice"
+]
+
+document.getElementById("mission").innerText = plan[missions % plan.length]
+
+const questions=[
+
+{skill:"Evidence", text:"Which word best shows speed?", answers:["burst","player","defender"], correct:0},
+
+{skill:"Language", text:"Salah burst past the defender.", answers:["burst","past","defender"], correct:0},
+
+{skill:"Language", text:"Frimpong raced down the wing.", answers:["wing","raced","down"], correct:1},
+
+{skill:"Language", text:"Wirtz curled the ball into the corner.", answers:["curled","ball","corner"], correct:0},
+
+{skill:"Imagery", text:"The stadium roared as the goal went in.", answers:["roared","goal","went"], correct:0},
+
+{skill:"Imagery", text:"The wind howled through the empty street.", answers:["empty","street","howled"], correct:2},
+
+{skill:"Writing", text:"Which sentence sounds strongest?", answers:[
+"The player ran forward.",
+"The player sprinted toward goal.",
+"The player moved ahead."
+], correct:1},
+
+{skill:"Persuasion", text:"Which word sounds most dramatic?", answers:["huge","massive","big"], correct:1},
+
+{skill:"Structure", text:"Stories often begin by...", answers:["introducing a setting","ending the story","explaining the moral"], correct:0}
+
+]
+
+let current
+
+function loadQuestion(){
+
+current = questions[Math.floor(Math.random()*questions.length)]
+
+document.getElementById("skill").innerText="Skill: "+current.skill
+
+document.getElementById("question").innerHTML=current.text+"<br><br>Select the best answer."
+
+let html=""
+
+current.answers.forEach((a,i)=>{
+html+=`<button onclick="answer(${i})">${a}</button>`
+})
+
+document.getElementById("answers").innerHTML=html
+}
+
+function answer(i){
+
+if(i===current.correct){
+
+points+=10
+missions+=1
+
+alert("Correct. Strong words create clearer imagery.")
+showWriting()
+
+}else{
+
+alert("Look for the most vivid word.")
+
+}
+
+save()
+}
+
+function showWriting(){
+
+document.getElementById("questionCard").style.display="none"
+document.getElementById("writingCard").style.display="block"
+
+document.getElementById("writingPrompt").innerText=
+"Explain why '"+current.answers[current.correct]+"' is effective."
+}
+
+function submitWriting(){
+
+let txt=document.getElementById("writing").value.toLowerCase()
+
+if(txt.includes("speed")||txt.includes("fast")||txt.includes("power")||txt.includes("strong")||txt.includes("loud")||txt.includes("dramatic")){
+
+points+=20
+streak+=1
+alert("Great explanation. +20 points")
+
+}else{
+
+alert("Tip: explain what the word suggests to the reader.")
+
+}
+
+save()
+
+document.getElementById("writingCard").style.display="none"
+document.getElementById("questionCard").style.display="block"
+
+loadQuestion()
+
+}
+
+function save(){
+
+localStorage.setItem("points",points)
+localStorage.setItem("streak",streak)
+localStorage.setItem("missions",missions)
+
+document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
+document.getElementById("missions").innerText=missions
+
+updateBar()
+
+}
+
+function updateBar(){
+
+let percent=(points/400)*100
+
+document.getElementById("bar").style.width=percent+"%"
+
+if(points>=400){
+document.getElementById("reward").innerText="🏆 Bhuna Grandmaster"
+}
+else if(points>=200){
+document.getElementById("reward").innerText="🍛 Chicken Bhuna unlocked"
+}
+else if(points>=150){
+document.getElementById("reward").innerText="Next reward: Rice"
+}
+else if(points>=100){
+document.getElementById("reward").innerText="Next reward: Sag Aloo"
+}
+else{
+document.getElementById("reward").innerText="Next reward: Onion Bhaji"
+}
+
+}
+
+let taps=0
+
+document.getElementById("title").onclick=function(){
+
+taps++
+
+if(taps===5){
+
+let predicted="Grade 3"
+
+if(points>150) predicted="Grade 4"
+if(points>250) predicted="Grade 5"
+
+alert(
+"Parent dashboard\n"+
+"Missions: "+missions+"\n"+
+"Points: "+points+"\n"+
+"Streak: "+streak+"\n"+
+"Estimated GCSE: "+predicted
+)
+
+taps=0
+}
+
+}
+
+updateBar()
+loadQuestion()
+
+</script>
+
+</body>
+</html>
