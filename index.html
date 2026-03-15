@@ -2,10 +2,9 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhuna Challenge</title>
+<title>The Bhuna Challenge – GCSE English 🍛</title>
 
 <style>
-
 body{
 background:#0b0b0b;
 color:white;
@@ -14,9 +13,7 @@ text-align:center;
 padding:20px;
 }
 
-h1{
-color:#c8102e;
-}
+h1{color:#c8102e;}
 
 .card{
 background:#1a1a1a;
@@ -39,7 +36,7 @@ max-width:340px;
 
 textarea{
 width:90%;
-height:100px;
+height:110px;
 border-radius:10px;
 padding:10px;
 }
@@ -58,62 +55,44 @@ width:0%;
 border-radius:10px;
 }
 
-.small{
-font-size:13px;
-opacity:0.7;
-}
-
+.small{font-size:13px;opacity:0.7;}
 </style>
 </head>
 
 <body>
 
-<h1 id="title">The Bhuna Challenge 🍛</h1>
+<h1 id="title">The Bhuna Challenge – GCSE English 🍛</h1>
 
 <div class="card">
-
 <p>⭐ Points: <span id="points"></span></p>
 <p>🔥 Streak: <span id="streak"></span></p>
-<p>📅 Missions completed: <span id="missions"></span></p>
+<p>📅 Missions: <span id="missions"></span></p>
+<p>🏆 Week: <span id="week"></span></p>
 
 <div class="progress">
 <div class="bar" id="bar"></div>
 </div>
 
 <p id="reward"></p>
-
 </div>
 
 <div class="card">
-
-<b>Today's Mission</b>
-
-<p id="mission"></p>
-
-<p class="small">5 minute GCSE skill builder</p>
-
+<b>Weekly Focus</b>
+<p id="focus"></p>
+<p class="small">5 minute GCSE English training</p>
 </div>
 
 <div class="card" id="questionCard">
-
 <p id="skill"></p>
-
 <p id="question"></p>
-
 <div id="answers"></div>
-
 </div>
 
 <div class="card" id="writingCard" style="display:none">
-
 <p id="writingPrompt"></p>
-
 <textarea id="writing"></textarea>
-
 <br>
-
 <button onclick="submitWriting()">Submit</button>
-
 </div>
 
 <script>
@@ -126,145 +105,66 @@ document.getElementById("points").innerText=points
 document.getElementById("streak").innerText=streak
 document.getElementById("missions").innerText=missions
 
-const missionsList=[
-
-"Find the strongest verb",
-
-"Explain the effect of a word",
-
-"Spot vivid imagery",
-
-"Improve a sentence",
-
-"Identify persuasive language"
-
+const weeks=[
+"Week 1: Powerful verbs and vocabulary",
+"Week 2: Language analysis",
+"Week 3: Imagery and description",
+"Week 4: Structure",
+"Week 5: Persuasion",
+"Week 6: Mini exam questions",
+"Week 7: Exam rescue practice"
 ]
 
-document.getElementById("mission").innerText=
+let currentWeek=Math.min(Math.floor(missions/7),6)
 
-missionsList[Math.floor(Math.random()*missionsList.length)]
+document.getElementById("week").innerText=currentWeek+1
+document.getElementById("focus").innerText=weeks[currentWeek]
 
-const questions=[
+const baseQuestions=[
+{skill:"Language",text:"Mohamed Salah burst past the defender.",answers:["burst","past","defender"],correct:0},
+{skill:"Language",text:"Jeremie Frimpong raced down the wing.",answers:["wing","raced","down"],correct:1},
+{skill:"Language",text:"Florian Wirtz curled the ball into the corner.",answers:["curled","ball","corner"],correct:0},
+{skill:"Imagery",text:"The stadium roared as the goal went in.",answers:["roared","goal","went"],correct:0},
+{skill:"Imagery",text:"The wind howled through the empty street.",answers:["empty","street","howled"],correct:2},
+{skill:"Writing",text:"Which sentence sounds strongest?",answers:["The player ran.","The player sprinted toward goal.","The player moved forward."],correct:1}
+]
 
-{
-
-skill:"Language Analysis",
-
-text:"Mohamed Salah burst past the defender.",
-
-answers:["burst","past","defender"],
-
-correct:0
-
-},
-
-{
-
-skill:"Language Analysis",
-
-text:"Jeremie Frimpong raced down the wing.",
-
-answers:["wing","raced","down"],
-
-correct:1
-
-},
-
-{
-
-skill:"Language Analysis",
-
-text:"Florian Wirtz curled the ball into the corner.",
-
-answers:["curled","ball","corner"],
-
-correct:0
-
-},
-
-{
-
-skill:"Imagery",
-
-text:"The stadium roared as the goal went in.",
-
-answers:["roared","goal","went"],
-
-correct:0
-
-},
-
-{
-
-skill:"Imagery",
-
-text:"The wind howled through the empty street.",
-
-answers:["empty","street","howled"],
-
-correct:2
-
-},
-
-{
-
-skill:"Writing",
-
-text:"Which sentence is strongest?",
-
-answers:[
-
-"The player ran.",
-
-"The player sprinted toward goal.",
-
-"The player moved forward."
-
-],
-
-correct:1
-
+let questions=[]
+for(let i=0;i<300;i++){
+questions.push(baseQuestions[i%baseQuestions.length])
 }
 
-]
-
-let currentQuestion
+let current
 
 function loadQuestion(){
 
-currentQuestion=questions[Math.floor(Math.random()*questions.length)]
+current=questions[Math.floor(Math.random()*questions.length)]
 
-document.getElementById("skill").innerText=
+document.getElementById("skill").innerText="Skill: "+current.skill
 
-"Skill: "+currentQuestion.skill
-
-document.getElementById("question").innerHTML=
-
-currentQuestion.text+"<br><br>Select the best answer."
+document.getElementById("question").innerHTML=current.text+"<br><br>Select the best answer."
 
 let html=""
 
-currentQuestion.answers.forEach((a,i)=>{
-
-html+=`<button onclick="checkAnswer(${i})">${a}</button>`
-
+current.answers.forEach((a,i)=>{
+html+=`<button onclick="answer(${i})">${a}</button>`
 })
 
 document.getElementById("answers").innerHTML=html
-
 }
 
-function checkAnswer(i){
+function answer(i){
 
-if(i===currentQuestion.correct){
+if(i===current.correct){
 
 points+=10
-
 missions+=1
 
-alert("Good choice. Strong words create clearer images.")
+alert("Correct. Strong vocabulary helps GCSE language analysis.")
 
+if(missions%7===0){
 showWriting()
+}
 
 }else{
 
@@ -279,37 +179,33 @@ save()
 function showWriting(){
 
 document.getElementById("questionCard").style.display="none"
-
 document.getElementById("writingCard").style.display="block"
 
 document.getElementById("writingPrompt").innerText=
-
-"Explain why '"+currentQuestion.answers[currentQuestion.correct]+"' is effective."
+"Weekly challenge: Explain why '"+current.answers[current.correct]+"' is effective. Write 3 sentences."
 
 }
 
 function submitWriting(){
 
-let answer=document.getElementById("writing").value.toLowerCase()
+let txt=document.getElementById("writing").value.toLowerCase()
 
-if(answer.includes("speed")||answer.includes("fast")||answer.includes("power")||answer.includes("strong")||answer.includes("loud")){
+if(txt.includes("speed")||txt.includes("fast")||txt.includes("power")||txt.includes("strong")||txt.includes("dramatic")){
 
-points+=20
-
+points+=40
 streak+=1
 
-alert("Good explanation. +20 points")
+alert("Great explanation. Weekly challenge complete.")
 
 }else{
 
-alert("Try explaining what the word suggests.")
+alert("Tip: explain what the word suggests to the reader.")
 
 }
 
 save()
 
 document.getElementById("writingCard").style.display="none"
-
 document.getElementById("questionCard").style.display="block"
 
 loadQuestion()
@@ -319,15 +215,11 @@ loadQuestion()
 function save(){
 
 localStorage.setItem("points",points)
-
 localStorage.setItem("streak",streak)
-
 localStorage.setItem("missions",missions)
 
 document.getElementById("points").innerText=points
-
 document.getElementById("streak").innerText=streak
-
 document.getElementById("missions").innerText=missions
 
 updateBar()
@@ -336,38 +228,24 @@ updateBar()
 
 function updateBar(){
 
-let percent=(points/350)*100
+let percent=(points/600)*100
 
 document.getElementById("bar").style.width=percent+"%"
 
-if(points>=350){
-
-document.getElementById("reward").innerText="🏆 Bhuna Master"
-
+if(points>=600){
+document.getElementById("reward").innerText="🍛 Chicken Bhuna unlocked"
 }
-
-else if(points>=200){
-
-document.getElementById("reward").innerText="Chicken Bhuna unlocked"
-
-}
-
-else if(points>=150){
-
+else if(points>=450){
 document.getElementById("reward").innerText="Next reward: Rice"
-
 }
-
-else if(points>=100){
-
+else if(points>=300){
 document.getElementById("reward").innerText="Next reward: Sag Aloo"
-
 }
-
-else{
-
+else if(points>=150){
 document.getElementById("reward").innerText="Next reward: Onion Bhaji"
-
+}
+else{
+document.getElementById("reward").innerText="Start your first mission"
 }
 
 }
@@ -380,14 +258,18 @@ taps++
 
 if(taps===5){
 
+let grade="Grade 3"
+
+if(points>300) grade="Grade 4"
+if(points>700) grade="Grade 5"
+
 alert(
-
-"Missions completed: "+missions+
-
-" | Streak: "+streak+
-
-" | Points: "+points
-
+"Parent Dashboard\n"+
+"Missions: "+missions+"\n"+
+"Points: "+points+"\n"+
+"Streak: "+streak+"\n"+
+"Training Week: "+(currentWeek+1)+"\n"+
+"Estimated GCSE Grade: "+grade
 )
 
 taps=0
@@ -397,7 +279,6 @@ taps=0
 }
 
 updateBar()
-
 loadQuestion()
 
 </script>
