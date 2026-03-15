@@ -1,59 +1,406 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Bhuna Challenge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhuna Challenge</title>
 
 <style>
+
 body{
-    margin:0;
-    font-family:Arial, Helvetica, sans-serif;
-    background:#0f172a;
-    color:white;
-    text-align:center;
+background:#0b0b0b;
+color:white;
+font-family:-apple-system,BlinkMacSystemFont,Arial;
+text-align:center;
+padding:20px;
 }
 
-header{
-    background:#111827;
-    padding:20px;
-    font-size:28px;
-    font-weight:bold;
+h1{
+color:#c8102e;
 }
 
-.container{
-    padding:30px;
+.card{
+background:#1a1a1a;
+padding:18px;
+border-radius:14px;
+margin-top:18px;
 }
 
 button{
-    background:#22c55e;
-    border:none;
-    padding:15px 25px;
-    font-size:18px;
-    border-radius:10px;
-    cursor:pointer;
+background:#c8102e;
+border:none;
+padding:12px;
+color:white;
+font-size:16px;
+border-radius:10px;
+margin:6px;
+width:85%;
+max-width:340px;
 }
 
-button:hover{
-    background:#16a34a;
+textarea{
+width:90%;
+height:100px;
+border-radius:10px;
+padding:10px;
 }
+
+.progress{
+background:#333;
+border-radius:10px;
+height:18px;
+margin-top:10px;
+}
+
+.bar{
+background:#c8102e;
+height:18px;
+width:0%;
+border-radius:10px;
+}
+
+.small{
+font-size:13px;
+opacity:0.7;
+}
+
 </style>
 </head>
 
 <body>
 
-<header>
-🔥 The Bhuna Challenge
-</header>
+<h1 id="title">The Bhuna Challenge 🍛</h1>
 
-<div class="container">
-<h2>Owen's GCSE Football Challenge</h2>
-<p>Test your football knowledge and complete the Bhuna Challenge.</p>
+<div class="card">
 
-<button onclick="alert('Challenge coming soon!')">
-Start Challenge
-</button>
+<p>⭐ Points: <span id="points"></span></p>
+<p>🔥 Streak: <span id="streak"></span></p>
+<p>📅 Missions completed: <span id="missions"></span></p>
+
+<div class="progress">
+<div class="bar" id="bar"></div>
 </div>
+
+<p id="reward"></p>
+
+</div>
+
+<div class="card">
+
+<b>Today's Mission</b>
+
+<p id="mission"></p>
+
+<p class="small">5 minute GCSE skill builder</p>
+
+</div>
+
+<div class="card" id="questionCard">
+
+<p id="skill"></p>
+
+<p id="question"></p>
+
+<div id="answers"></div>
+
+</div>
+
+<div class="card" id="writingCard" style="display:none">
+
+<p id="writingPrompt"></p>
+
+<textarea id="writing"></textarea>
+
+<br>
+
+<button onclick="submitWriting()">Submit</button>
+
+</div>
+
+<script>
+
+let points=parseInt(localStorage.getItem("points"))||0
+let streak=parseInt(localStorage.getItem("streak"))||0
+let missions=parseInt(localStorage.getItem("missions"))||0
+
+document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
+document.getElementById("missions").innerText=missions
+
+const missionsList=[
+
+"Find the strongest verb",
+
+"Explain the effect of a word",
+
+"Spot vivid imagery",
+
+"Improve a sentence",
+
+"Identify persuasive language"
+
+]
+
+document.getElementById("mission").innerText=
+
+missionsList[Math.floor(Math.random()*missionsList.length)]
+
+const questions=[
+
+{
+
+skill:"Language Analysis",
+
+text:"Mohamed Salah burst past the defender.",
+
+answers:["burst","past","defender"],
+
+correct:0
+
+},
+
+{
+
+skill:"Language Analysis",
+
+text:"Jeremie Frimpong raced down the wing.",
+
+answers:["wing","raced","down"],
+
+correct:1
+
+},
+
+{
+
+skill:"Language Analysis",
+
+text:"Florian Wirtz curled the ball into the corner.",
+
+answers:["curled","ball","corner"],
+
+correct:0
+
+},
+
+{
+
+skill:"Imagery",
+
+text:"The stadium roared as the goal went in.",
+
+answers:["roared","goal","went"],
+
+correct:0
+
+},
+
+{
+
+skill:"Imagery",
+
+text:"The wind howled through the empty street.",
+
+answers:["empty","street","howled"],
+
+correct:2
+
+},
+
+{
+
+skill:"Writing",
+
+text:"Which sentence is strongest?",
+
+answers:[
+
+"The player ran.",
+
+"The player sprinted toward goal.",
+
+"The player moved forward."
+
+],
+
+correct:1
+
+}
+
+]
+
+let currentQuestion
+
+function loadQuestion(){
+
+currentQuestion=questions[Math.floor(Math.random()*questions.length)]
+
+document.getElementById("skill").innerText=
+
+"Skill: "+currentQuestion.skill
+
+document.getElementById("question").innerHTML=
+
+currentQuestion.text+"<br><br>Select the best answer."
+
+let html=""
+
+currentQuestion.answers.forEach((a,i)=>{
+
+html+=`<button onclick="checkAnswer(${i})">${a}</button>`
+
+})
+
+document.getElementById("answers").innerHTML=html
+
+}
+
+function checkAnswer(i){
+
+if(i===currentQuestion.correct){
+
+points+=10
+
+missions+=1
+
+alert("Good choice. Strong words create clearer images.")
+
+showWriting()
+
+}else{
+
+alert("Look for the strongest or most vivid word.")
+
+}
+
+save()
+
+}
+
+function showWriting(){
+
+document.getElementById("questionCard").style.display="none"
+
+document.getElementById("writingCard").style.display="block"
+
+document.getElementById("writingPrompt").innerText=
+
+"Explain why '"+currentQuestion.answers[currentQuestion.correct]+"' is effective."
+
+}
+
+function submitWriting(){
+
+let answer=document.getElementById("writing").value.toLowerCase()
+
+if(answer.includes("speed")||answer.includes("fast")||answer.includes("power")||answer.includes("strong")||answer.includes("loud")){
+
+points+=20
+
+streak+=1
+
+alert("Good explanation. +20 points")
+
+}else{
+
+alert("Try explaining what the word suggests.")
+
+}
+
+save()
+
+document.getElementById("writingCard").style.display="none"
+
+document.getElementById("questionCard").style.display="block"
+
+loadQuestion()
+
+}
+
+function save(){
+
+localStorage.setItem("points",points)
+
+localStorage.setItem("streak",streak)
+
+localStorage.setItem("missions",missions)
+
+document.getElementById("points").innerText=points
+
+document.getElementById("streak").innerText=streak
+
+document.getElementById("missions").innerText=missions
+
+updateBar()
+
+}
+
+function updateBar(){
+
+let percent=(points/350)*100
+
+document.getElementById("bar").style.width=percent+"%"
+
+if(points>=350){
+
+document.getElementById("reward").innerText="🏆 Bhuna Master"
+
+}
+
+else if(points>=200){
+
+document.getElementById("reward").innerText="Chicken Bhuna unlocked"
+
+}
+
+else if(points>=150){
+
+document.getElementById("reward").innerText="Next reward: Rice"
+
+}
+
+else if(points>=100){
+
+document.getElementById("reward").innerText="Next reward: Sag Aloo"
+
+}
+
+else{
+
+document.getElementById("reward").innerText="Next reward: Onion Bhaji"
+
+}
+
+}
+
+let taps=0
+
+document.getElementById("title").onclick=function(){
+
+taps++
+
+if(taps===5){
+
+alert(
+
+"Missions completed: "+missions+
+
+" | Streak: "+streak+
+
+" | Points: "+points
+
+)
+
+taps=0
+
+}
+
+}
+
+updateBar()
+
+loadQuestion()
+
+</script>
 
 </body>
 </html>
