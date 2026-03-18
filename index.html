@@ -2,19 +2,17 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GCSE English – The Bhuna Challenge</title>
+<title>GCSE English – Bhuna Challenge</title>
 
 <style>
 body{
 margin:0;
 background:#eef2f7;
-font-family:-apple-system,BlinkMacSystemFont,Segoe UI;
+font-family:-apple-system;
 text-align:center;
 padding:20px;
 color:#1f2937;
 }
-
-h1{font-size:24px}
 
 .card{
 background:white;
@@ -32,109 +30,67 @@ padding:14px;
 border-radius:10px;
 margin:6px;
 width:90%;
-font-size:16px;
 }
 
 textarea{
 width:92%;
 height:110px;
-padding:10px;
 border-radius:10px;
-border:1px solid #d1d5db;
+padding:10px;
+border:1px solid #ccc;
 }
 
-.reward{
-display:flex;
-justify-content:space-between;
-padding:6px 0;
-}
-
+.reward{display:flex;justify-content:space-between}
 .locked{opacity:0.4}
 .unlocked{color:#059669;font-weight:bold}
 
-.progress{
-height:10px;
-background:#e5e7eb;
-border-radius:8px;
-margin-top:10px;
-}
+.progress{height:10px;background:#e5e7eb;border-radius:8px}
+.bar{height:10px;background:#2563eb;width:0%}
 
-.bar{
-height:10px;
-background:#2563eb;
-width:0%;
-border-radius:8px;
-}
-
-.small{font-size:13px;color:#6b7280}
-.correct{color:#059669}
-.wrong{color:#dc2626}
-
-/* 🎉 reward animation */
-#rewardPopup{
+#popup{
 position:fixed;
 top:30%;
 left:50%;
 transform:translate(-50%,-50%);
 background:white;
 padding:20px;
-border-radius:14px;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-font-size:18px;
+border-radius:12px;
 display:none;
-animation:pop 0.4s ease;
-}
-
-@keyframes pop{
-0%{transform:scale(0.7) translate(-50%,-50%);opacity:0}
-100%{transform:scale(1) translate(-50%,-50%);opacity:1}
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
 </style>
 </head>
 
 <body>
 
-<h1>GCSE English – The Bhuna Challenge</h1>
+<h2>GCSE English – Bhuna Challenge</h2>
 
-<div id="rewardPopup"></div>
+<div id="popup"></div>
 
 <div class="card">
 <p>Points: <b id="points"></b></p>
 <p>Streak: <b id="streak"></b></p>
 
 <h3>Rewards</h3>
-<div id="rewardList"></div>
-<p id="nextReward"></p>
+<div id="rewards"></div>
+<p id="next"></p>
 
-<div class="progress"><div class="bar" id="progress"></div></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
 </div>
 
-<div class="card" id="mcSection">
-<p id="question"></p>
-<div id="answers"></div>
-<p id="feedback"></p>
-</div>
-
-<div class="card" id="examSection" style="display:none">
-<p id="extract"></p>
-<p><b id="examQuestion"></b></p>
-<textarea id="examAnswer"></textarea>
-<button onclick="submitExam()">Submit</button>
-<p id="examFeedback"></p>
-</div>
+<div class="card" id="mc"></div>
+<div class="card" id="exam" style="display:none"></div>
+<div class="card" id="improve" style="display:none"></div>
 
 <script>
 
-// DATA
 let points=+localStorage.getItem("points")||0
-let streak=+localStorage.getItem("streak")||1
 let step=+localStorage.getItem("step")||0
-let unlockedRewards=JSON.parse(localStorage.getItem("unlockedRewards"))||[]
+let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
 
 document.getElementById("points").innerText=points
-document.getElementById("streak").innerText=streak
+document.getElementById("streak").innerText=1
 
-// REWARDS
 const rewards=[
 {name:"Onion Bhaji",pts:120},
 {name:"Sag Aloo",pts:240},
@@ -142,167 +98,169 @@ const rewards=[
 {name:"Chicken Bhuna",pts:480}
 ]
 
-function showRewardPopup(name){
-let popup=document.getElementById("rewardPopup")
-popup.innerText="🎉 "+name+" Unlocked!"
-popup.style.display="block"
-
-setTimeout(()=>popup.style.display="none",2000)
+function popup(text){
+let p=document.getElementById("popup")
+p.innerText=text
+p.style.display="block"
+setTimeout(()=>p.style.display="none",2000)
 }
 
 function loadRewards(){
 
 let html=""
-let newUnlock=null
+let newItem=null
 
 rewards.forEach(r=>{
+let u=points>=r.pts
 
-let unlocked=points>=r.pts
-
-if(unlocked && !unlockedRewards.includes(r.name)){
-unlockedRewards.push(r.name)
-newUnlock=r.name
+if(u && !unlocked.includes(r.name)){
+unlocked.push(r.name)
+newItem=r.name
 }
 
-html+=`<div class="reward ${unlocked?"unlocked":"locked"}">
-<span>${r.name}</span>
-<span>${r.pts}</span>
-</div>`
+html+=`<div class="${u?'unlocked':'locked'}">${r.name} – ${r.pts}</div>`
 })
 
-localStorage.setItem("unlockedRewards",JSON.stringify(unlockedRewards))
+localStorage.setItem("unlocked",JSON.stringify(unlocked))
 
-document.getElementById("rewardList").innerHTML=html
+document.getElementById("rewards").innerHTML=html
 
 let next=rewards.find(r=>points<r.pts)
 
 if(next){
-document.getElementById("nextReward").innerText=
+document.getElementById("next").innerText=
 "Next: "+next.name+" ("+(next.pts-points)+" pts)"
-}else{
-document.getElementById("nextReward").innerText="All rewards unlocked"
 }
 
-document.getElementById("progress").style.width=
-(Math.min(points/480,1)*100)+"%"
+document.getElementById("bar").style.width=(points/480*100)+"%"
 
-if(newUnlock) showRewardPopup(newUnlock)
+if(newItem) popup("🎉 "+newItem+" unlocked!")
 }
 
 // QUESTIONS (expanded)
 const questions=[
 ["The crowd roared","Technique?",["Verb","Metaphor","Fact"],0],
-["The stadium exploded","Technique?",["Metaphor","Simile","Adjective"],0],
-["He crept slowly","Suggests?",["Stealth","Joy","Anger"],0],
-["The silence filled the room","Effect?",["Tension","Humour","Calm"],0],
-["The wind howled","Technique?",["Personification","Fact","Opinion"],0],
-["The lights flickered","Creates?",["Tension","Peace","Fun"],0],
-["She stared coldly","Effect?",["Hostility","Warmth","Confusion"],0],
-["He dashed forward","Suggests?",["Speed","Fear","Calm"],0],
+["The stadium exploded","Technique?",["Metaphor","Simile","Verb"],0],
+["He crept silently","Suggests?",["Stealth","Joy","Fear"],0],
+["The silence pressed down","Effect?",["Tension","Fun","Calm"],0],
+["The wind screamed","Technique?",["Personification","Fact","Opinion"],0],
+["The lights flickered","Creates?",["Tension","Calm","Happiness"],0],
+["He sprinted forward","Suggests?",["Speed","Fear","Sadness"],0],
 ["The room was boiling","Technique?",["Metaphor","Fact","Verb"],0],
-["The crowd held its breath","Effect?",["Suspense","Joy","Calm"],0]
+["The crowd held its breath","Effect?",["Suspense","Calm","Joy"],0],
+["She glared coldly","Effect?",["Anger","Happiness","Confusion"],0]
 ]
 
-// EXTRACTS
 const extracts=[
 {
-text:`Lines 1–4
-
-The crowd roared as Frimpong sprinted forward. The stadium trembled.`,
-question:"How does the writer use language to describe the atmosphere? (8 marks)"
+text:"The crowd roared as Frimpong charged forward.",
+q:"How does the writer describe the atmosphere? (8 marks)"
 },
 {
-text:`Lines 2–5
-
-Wirtz moved like a shadow, silent and quick.`,
-question:"How does the writer describe movement? (8 marks)"
+text:"Wirtz moved like a shadow, silent and quick.",
+q:"How is movement presented? (8 marks)"
 }
 ]
 
-// FLOW
+const weak="The writer uses words to show excitement."
+
 function load(){
 
 loadRewards()
 
 if(step<3){
 loadMC()
-}else{
+}else if(step==3){
 loadExam()
+}else{
+loadImprove()
 }
 }
 
+// MC
 function loadMC(){
 
 let q=questions[Math.floor(Math.random()*questions.length)]
 
-document.getElementById("question").innerText=q[0]+" — "+q[1]
-
-let html=""
+let html="<p>"+q[0]+" — "+q[1]+"</p>"
 
 q[2].forEach((a,i)=>{
-html+=`<button onclick="answer(${i},${q[3]})">${a}</button>`
+html+=`<button onclick="ans(${i},${q[3]})">${a}</button>`
 })
 
-document.getElementById("answers").innerHTML=html
+document.getElementById("mc").innerHTML=html
 }
 
-function answer(i,c){
+function ans(i,c){
 
-if(i===c){
+if(i==c){
 points+=10
 step++
-document.getElementById("feedback").innerHTML="<span class='correct'>Correct</span>"
-}else{
-document.getElementById("feedback").innerHTML="<span class='wrong'>Try again</span>"
-return
-}
-
 save()
-setTimeout(()=>location.reload(),400)
+location.reload()
+}
 }
 
 // EXAM
 function loadExam(){
 
-document.getElementById("mcSection").style.display="none"
-document.getElementById("examSection").style.display="block"
-
 let e=extracts[Math.floor(Math.random()*extracts.length)]
 
-document.getElementById("extract").innerText=e.text
-document.getElementById("examQuestion").innerText=e.question
+document.getElementById("mc").style.display="none"
+
+document.getElementById("exam").style.display="block"
+document.getElementById("exam").innerHTML=`
+<p>${e.text}</p>
+<p><b>${e.q}</b></p>
+<textarea id="ansBox"></textarea>
+<button onclick="mark()">Submit</button>
+<p id="fb"></p>
+`
 }
 
-// MARKING (no regression)
-function submitExam(){
+function mark(){
 
-let txt=document.getElementById("examAnswer").value.toLowerCase()
+let t=document.getElementById("ansBox").value.toLowerCase()
 
 let score=0
+if(t.includes("'"))score++
+if(t.includes("metaphor")||t.includes("simile"))score++
+if(t.includes("suggest")||t.includes("shows"))score++
 
-if(txt.includes("'")) score++
-if(txt.includes("metaphor")||txt.includes("simile")) score++
-if(txt.includes("suggest")||txt.includes("shows")) score++
+let msg="Level 1"
+if(score==2){msg="Level 2";points+=20}
+if(score==3){msg="Level 3";points+=35}
 
-let level=""
+document.getElementById("fb").innerText=msg+" — add quote + technique + effect"
 
-if(score==1) level="Level 1 (1–2)"
-if(score==2){ level="Level 2 (3–5)"; points+=20 }
-if(score==3){ level="Level 3 (6–8)"; points+=35 }
+step++
+save()
+}
 
-document.getElementById("examFeedback").innerText=
-level+" — Add quote + technique + effect"
+// IMPROVE
+function loadImprove(){
 
+document.getElementById("exam").style.display="none"
+document.getElementById("improve").style.display="block"
+
+document.getElementById("improve").innerHTML=`
+<p>Improve this:</p>
+<p>${weak}</p>
+<textarea id="imp"></textarea>
+<button onclick="done()">Submit</button>
+`
+}
+
+function done(){
+points+=15
 step=0
 save()
-
-setTimeout(()=>location.reload(),1200)
+location.reload()
 }
 
 function save(){
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
-localStorage.setItem("streak",streak)
 }
 
 load()
