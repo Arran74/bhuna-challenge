@@ -30,6 +30,11 @@ padding:14px;
 border-radius:10px;
 margin:6px;
 width:90%;
+transition:0.2s;
+}
+
+button:disabled{
+opacity:0.7;
 }
 
 textarea{
@@ -40,7 +45,6 @@ padding:10px;
 border:1px solid #ccc;
 }
 
-.reward{display:flex;justify-content:space-between}
 .locked{opacity:0.4}
 .unlocked{color:#059669;font-weight:bold}
 
@@ -57,6 +61,7 @@ padding:20px;
 border-radius:12px;
 display:none;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
+font-size:18px;
 }
 </style>
 </head>
@@ -84,7 +89,7 @@ box-shadow:0 10px 30px rgba(0,0,0,0.2);
 
 <script>
 
-// DATA
+// STATE
 let points=+localStorage.getItem("points")||0
 let step=+localStorage.getItem("step")||0
 let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
@@ -141,84 +146,39 @@ document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
 if(newItem) popup("🎉 "+newItem+" unlocked!")
 }
 
-// QUESTION BANK (expanded)
+// QUESTIONS
 const questions=[
-
 ["The crowd roared","Which technique?",["Verb","Metaphor","Fact"],0],
 ["The stadium exploded with noise","Technique?",["Metaphor","Simile","Verb"],0],
-["The wind screamed through the trees","Technique?",["Personification","Fact","Opinion"],0],
+["The wind screamed","Technique?",["Personification","Fact","Opinion"],0],
 ["Her heart raced like a drum","Technique?",["Simile","Metaphor","Verb"],0],
-["The room was a freezer","Technique?",["Metaphor","Simile","Fact"],0],
-
 ["The silence filled the room","Effect?",["Tension","Joy","Calm"],0],
 ["The crowd held its breath","Effect?",["Suspense","Relaxation","Boredom"],0],
 ["He crept slowly","Suggests?",["Stealth","Happiness","Anger"],0],
-["She stared coldly","Effect?",["Hostility","Warmth","Confusion"],0],
-["The lights flickered","Creates?",["Tension","Calm","Humour"],0],
-
-["The word 'roared' suggests...","Best answer?",["Power","Weakness","Silence"],0],
-["The word 'exploded' suggests...","Best answer?",["Intensity","Calm","Slow pace"],0],
-["The word 'crept' suggests...","Best answer?",["Stealth","Speed","Noise"],0],
-["The word 'frozen' suggests...","Best answer?",["Stillness","Movement","Heat"],0],
-
-["Short sentence used. Why?","Answer?",["Creates impact","Adds detail","Shows setting"],0],
-["Long sentence used. Why?","Answer?",["Builds detail","Creates shock","Shows silence"],0],
-["Focus shifts to crowd. Why?","Answer?",["Show reaction","Add humour","Slow pace"],0],
-
-["The phrase 'wave of sound' is...","Answer?",["Metaphor","Fact","Simile"],0],
-["The phrase 'as quiet as night' is...","Answer?",["Simile","Metaphor","Verb"],0],
-["The verb 'charged' suggests...","Answer?",["Speed","Calm","Fear"],0],
-["The adjective 'cold' suggests...","Answer?",["Emotion","Speed","Noise"],0]
-
+["The lights flickered","Creates?",["Tension","Calm","Humour"],0]
 ]
 
-// GCSE EXTRACTS
+// EXTRACTS
 const extracts=[
-
 {
-text:`Lines 1–5
-
-The crowd roared as Frimpong surged down the wing. The noise built into a wave, crashing across the stadium.`,
-q:"How does the writer use language to describe the atmosphere? (8 marks)"
+text:`The crowd roared as Frimpong surged forward. The sound crashed across the stadium.`,
+q:"How does the writer describe the atmosphere? (8 marks)"
 },
-
 {
-text:`Lines 2–6
-
-Wirtz moved like a shadow, silent and quick. Defenders struggled to react as he slipped past them.`,
-q:"How does the writer present Wirtz’s movement? (8 marks)"
-},
-
-{
-text:`Lines 1–4
-
-The silence pressed down on the stadium. Every supporter waited, frozen in anticipation.`,
-q:"How does the writer create tension? (8 marks)"
-},
-
-{
-text:`Lines 3–7
-
-The player paused. Then suddenly, he exploded forward, leaving the defender behind.`,
-q:"How does the writer use structure to create impact? (8 marks)"
+text:`Wirtz moved like a shadow, silent and quick.`,
+q:"How is movement presented? (8 marks)"
 }
-
 ]
 
 const weak="The writer uses words to show excitement."
 
 // FLOW
 function load(){
-
 loadRewards()
 
-if(step<3){
-loadMC()
-}else if(step==3){
-loadExam()
-}else{
-loadImprove()
-}
+if(step<3) loadMC()
+else if(step==3) loadExam()
+else loadImprove()
 }
 
 // MC
@@ -229,7 +189,7 @@ let q=questions[Math.floor(Math.random()*questions.length)]
 let html="<p>"+q[0]+" — "+q[1]+"</p>"
 
 q[2].forEach((a,i)=>{
-html+=`<button onclick="ans(${i},${q[3]})">${a}</button>`
+html+=`<button id="btn${i}" onclick="ans(${i},${q[3]})">${a}</button>`
 })
 
 document.getElementById("mc").innerHTML=html
@@ -237,14 +197,31 @@ document.getElementById("mc").innerHTML=html
 
 function ans(i,c){
 
+let buttons=document.querySelectorAll("#mc button")
+buttons.forEach(b=>b.disabled=true)
+
+// highlight
+document.getElementById("btn"+c).style.background="#059669"
+
+if(i!=c){
+document.getElementById("btn"+i).style.background="#dc2626"
+}
+
+let feedback=""
+
 if(i==c){
 points+=10
 step++
-save()
-location.reload()
+feedback="✅ Correct – +10 points"
 }else{
-alert("Try again – think carefully")
+feedback="❌ Not quite – correct answer highlighted"
 }
+
+document.getElementById("mc").innerHTML += `<p><b>${feedback}</b></p>`
+
+save()
+
+setTimeout(()=>location.reload(),1200)
 }
 
 // EXAM
@@ -273,13 +250,13 @@ let score=0
 let feedback=[]
 
 if(t.includes("'")||t.includes('"')) score++
-else feedback.push("Add a short quote")
+else feedback.push("Add a quote")
 
 if(t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")) score++
 else feedback.push("Name the technique")
 
-if(t.includes("suggest")||t.includes("shows")||t.includes("makes")) score++
-else feedback.push("Explain the effect (this suggests...)")
+if(t.includes("suggest")||t.includes("shows")) score++
+else feedback.push("Explain the effect")
 
 let msg=""
 if(score==1) msg="Level 1 (1–2 marks)"
@@ -289,14 +266,14 @@ if(score==3){ msg="Level 3 (6–8 marks)"; points+=35 }
 document.getElementById("fb").innerText =
 msg + "\n\n" +
 (score===3
-? "This is a clear Level 3 response. Well done."
-: "To reach the next level:\n" + feedback.join("\n"))
+? "Strong answer."
+: "Improve:\n"+feedback.join("\n"))
 
 step++
 save()
 }
 
-// IMPROVE TASK
+// IMPROVE
 function loadImprove(){
 
 document.getElementById("exam").style.display="none"
@@ -305,7 +282,7 @@ document.getElementById("improve").style.display="block"
 document.getElementById("improve").innerHTML=`
 <p><b>Improve this answer:</b></p>
 <p>${weak}</p>
-<textarea id="imp"></textarea>
+<textarea></textarea>
 <button onclick="done()">Submit</button>
 <p id="impFb"></p>
 `
@@ -316,7 +293,7 @@ function done(){
 points+=15
 
 document.getElementById("impFb").innerText=
-"Better — aim to include quote + technique + effect."
+"Better — include quote + technique + effect next time."
 
 step=0
 save()
