@@ -41,9 +41,7 @@ font-weight:600;
 font-size:15px;
 }
 
-button:active{
-transform:scale(0.97);
-}
+button:active{transform:scale(0.97);}
 
 textarea{
 width:92%;
@@ -82,11 +80,7 @@ justify-content:space-between;
 .locked{opacity:0.4;}
 .unlocked{color:#4ade80;}
 
-#feedback{
-margin-top:10px;
-font-weight:600;
-}
-
+#feedback{margin-top:10px;font-weight:600;}
 .correct{color:#4ade80;}
 .wrong{color:#f87171;}
 
@@ -168,6 +162,7 @@ else if(diff>1)streak=1
 }else streak=1
 localStorage.setItem("lastDate",today)
 
+// QUESTIONS
 const easy=[
 ["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1],
 ["He ran quickly","What is this?",["Verb","Noun","Adjective"],0]
@@ -261,24 +256,52 @@ if(acc>0.8 && difficulty<3)difficulty++
 if(acc<0.5 && difficulty>1)difficulty--
 }
 
+// ⭐ IMPROVED GCSE MARKING
+function submitExam(){
+
+let txt = document.getElementById("answer").value.toLowerCase()
+
+let hasQuote = txt.includes("'") || txt.includes('"')
+let hasTechnique = txt.includes("metaphor") || txt.includes("simile") || txt.includes("verb") || txt.includes("adjective") || txt.includes("language")
+let hasEffect = txt.includes("suggest") || txt.includes("shows") || txt.includes("makes") || txt.includes("creates")
+
+let score = 0
+let feedback = []
+
+if(hasQuote){score++} 
+else{feedback.push("➤ Add a short quote")}
+
+if(hasTechnique){score++} 
+else{feedback.push("➤ Name the technique")}
+
+if(hasEffect){score++} 
+else{feedback.push("➤ Explain the effect (this suggests…)")}
+
+if(score === 3){
+points += 40
+document.getElementById("modelAnswer").innerText =
+"✔ Strong answer – clear Grade 4"
+}
+else if(score === 2){
+points += 25
+document.getElementById("modelAnswer").innerText =
+"⚠ Nearly there:\n" + feedback.join("\n")
+}
+else{
+document.getElementById("modelAnswer").innerText =
+"✖ Improve:\n" + feedback.join("\n")
+}
+
+step=4
+save()
+setTimeout(()=>location.reload(),1800)
+}
+
 function showExam(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("examSection").style.display="block"
 document.getElementById("extract").innerText=
 extracts[Math.floor(Math.random()*extracts.length)]
-}
-
-function submitExam(){
-let txt=document.getElementById("answer").value.toLowerCase()
-if(txt.includes("writer")&&txt.includes("suggest")){
-points+=40
-document.getElementById("modelAnswer").innerText="Strong answer"
-}else{
-document.getElementById("modelAnswer").innerText="Add: This suggests..."
-}
-step=4
-save()
-setTimeout(()=>location.reload(),1200)
 }
 
 function showImprove(){
@@ -341,7 +364,7 @@ let next = rewards.find(r=>points < r.pts)
 if(next){
 let remaining = next.pts - points
 document.getElementById("nextReward").innerText =
-"Next: "+next.name+" — "+remaining+" points to go"
+"Next: "+next.name+" — "+remaining+" points"
 }else{
 document.getElementById("nextReward").innerText =
 "All rewards unlocked"
