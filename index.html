@@ -7,29 +7,29 @@
 <style>
 body{
 margin:0;
-background:#f3f4f6;
-font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+background:#eef2f7;
+font-family:-apple-system,BlinkMacSystemFont,Segoe UI;
 text-align:center;
 padding:20px;
 color:#1f2937;
 }
 
-h1{font-size:26px}
+h1{font-size:24px}
 
 .card{
 background:white;
 padding:18px;
-border-radius:12px;
+border-radius:14px;
 margin-top:15px;
-box-shadow:0 4px 10px rgba(0,0,0,0.08);
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
 button{
-background:#2563eb;
-border:none;
+background:#1d4ed8;
 color:white;
+border:none;
 padding:14px;
-border-radius:8px;
+border-radius:10px;
 margin:6px;
 width:90%;
 font-size:16px;
@@ -39,7 +39,7 @@ textarea{
 width:92%;
 height:110px;
 padding:10px;
-border-radius:8px;
+border-radius:10px;
 border:1px solid #d1d5db;
 }
 
@@ -70,6 +70,25 @@ border-radius:8px;
 .correct{color:#059669}
 .wrong{color:#dc2626}
 
+/* 🎉 reward animation */
+#rewardPopup{
+position:fixed;
+top:30%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+font-size:18px;
+display:none;
+animation:pop 0.4s ease;
+}
+
+@keyframes pop{
+0%{transform:scale(0.7) translate(-50%,-50%);opacity:0}
+100%{transform:scale(1) translate(-50%,-50%);opacity:1}
+}
 </style>
 </head>
 
@@ -77,11 +96,13 @@ border-radius:8px;
 
 <h1>GCSE English – The Bhuna Challenge</h1>
 
+<div id="rewardPopup"></div>
+
 <div class="card">
 <p>Points: <b id="points"></b></p>
 <p>Streak: <b id="streak"></b></p>
 
-<h3>Rewards Ladder</h3>
+<h3>Rewards</h3>
 <div id="rewardList"></div>
 <p id="nextReward"></p>
 
@@ -97,32 +118,23 @@ border-radius:8px;
 <div class="card" id="examSection" style="display:none">
 <p id="extract"></p>
 <p><b id="examQuestion"></b></p>
-
 <textarea id="examAnswer"></textarea>
-<button onclick="submitExam()">Submit Answer</button>
-
+<button onclick="submitExam()">Submit</button>
 <p id="examFeedback"></p>
-</div>
-
-<div class="card" id="improveSection" style="display:none">
-<p><b>Improve this answer:</b></p>
-<p id="weak"></p>
-
-<textarea id="improveBox"></textarea>
-<button onclick="submitImprove()">Submit Improvement</button>
-
-<p id="improveFeedback"></p>
 </div>
 
 <script>
 
+// DATA
 let points=+localStorage.getItem("points")||0
 let streak=+localStorage.getItem("streak")||1
 let step=+localStorage.getItem("step")||0
+let unlockedRewards=JSON.parse(localStorage.getItem("unlockedRewards"))||[]
 
 document.getElementById("points").innerText=points
 document.getElementById("streak").innerText=streak
 
+// REWARDS
 const rewards=[
 {name:"Onion Bhaji",pts:120},
 {name:"Sag Aloo",pts:240},
@@ -130,18 +142,35 @@ const rewards=[
 {name:"Chicken Bhuna",pts:480}
 ]
 
+function showRewardPopup(name){
+let popup=document.getElementById("rewardPopup")
+popup.innerText="🎉 "+name+" Unlocked!"
+popup.style.display="block"
+
+setTimeout(()=>popup.style.display="none",2000)
+}
+
 function loadRewards(){
 
 let html=""
+let newUnlock=null
 
 rewards.forEach(r=>{
+
 let unlocked=points>=r.pts
+
+if(unlocked && !unlockedRewards.includes(r.name)){
+unlockedRewards.push(r.name)
+newUnlock=r.name
+}
 
 html+=`<div class="reward ${unlocked?"unlocked":"locked"}">
 <span>${r.name}</span>
-<span>${r.pts} pts</span>
+<span>${r.pts}</span>
 </div>`
 })
+
+localStorage.setItem("unlockedRewards",JSON.stringify(unlockedRewards))
 
 document.getElementById("rewardList").innerHTML=html
 
@@ -149,58 +178,58 @@ let next=rewards.find(r=>points<r.pts)
 
 if(next){
 document.getElementById("nextReward").innerText=
-"Next reward: "+next.name+" ("+(next.pts-points)+" pts to go)"
+"Next: "+next.name+" ("+(next.pts-points)+" pts)"
+}else{
+document.getElementById("nextReward").innerText="All rewards unlocked"
 }
 
-document.getElementById("progress").style.width=(points/480*100)+"%"
+document.getElementById("progress").style.width=
+(Math.min(points/480,1)*100)+"%"
+
+if(newUnlock) showRewardPopup(newUnlock)
 }
 
+// QUESTIONS (expanded)
 const questions=[
-
-["The crowd roared","Which language technique?",["Verb","Metaphor","Fact"],0],
-
-["The stadium exploded with noise","Technique?",["Metaphor","Simile","Adjective"],0],
-
-["He crept slowly","This suggests…",["Stealth","Anger","Joy"],0],
-
-["The silence filled the room","Effect?",["Tension","Humour","Happiness"],0],
-
-["The wind howled outside","Technique?",["Personification","Fact","Opinion"],0],
-
-["Her eyes burned with anger","Technique?",["Metaphor","Fact","Verb"],0],
-
-["The crowd held its breath","This shows…",["Suspense","Boredom","Calm"],0],
-
-["The lights flickered","Creates…",["Tension","Joy","Relaxation"],0]
-
+["The crowd roared","Technique?",["Verb","Metaphor","Fact"],0],
+["The stadium exploded","Technique?",["Metaphor","Simile","Adjective"],0],
+["He crept slowly","Suggests?",["Stealth","Joy","Anger"],0],
+["The silence filled the room","Effect?",["Tension","Humour","Calm"],0],
+["The wind howled","Technique?",["Personification","Fact","Opinion"],0],
+["The lights flickered","Creates?",["Tension","Peace","Fun"],0],
+["She stared coldly","Effect?",["Hostility","Warmth","Confusion"],0],
+["He dashed forward","Suggests?",["Speed","Fear","Calm"],0],
+["The room was boiling","Technique?",["Metaphor","Fact","Verb"],0],
+["The crowd held its breath","Effect?",["Suspense","Joy","Calm"],0]
 ]
 
+// EXTRACTS
 const extracts=[
-
 {
-text:`Lines 1-4
+text:`Lines 1–4
 
-The crowd roared as Frimpong sprinted down the wing. The stadium trembled with noise.`,
+The crowd roared as Frimpong sprinted forward. The stadium trembled.`,
 question:"How does the writer use language to describe the atmosphere? (8 marks)"
 },
-
 {
-text:`Lines 2-5
+text:`Lines 2–5
 
-Wirtz glided past defenders like a shadow. The crowd held its breath.`,
-question:"How does the writer describe Wirtz’s movement? (8 marks)"
-},
-
-{
-text:`Lines 1-4
-
-The silence pressed down on the stadium. Every supporter waited.`,
-question:"How does the writer create tension here? (8 marks)"
+Wirtz moved like a shadow, silent and quick.`,
+question:"How does the writer describe movement? (8 marks)"
 }
-
 ]
 
-const weakAnswer="The writer uses words to show excitement."
+// FLOW
+function load(){
+
+loadRewards()
+
+if(step<3){
+loadMC()
+}else{
+loadExam()
+}
+}
 
 function loadMC(){
 
@@ -220,23 +249,19 @@ document.getElementById("answers").innerHTML=html
 function answer(i,c){
 
 if(i===c){
-
 points+=10
 step++
 document.getElementById("feedback").innerHTML="<span class='correct'>Correct</span>"
-
 }else{
-
 document.getElementById("feedback").innerHTML="<span class='wrong'>Try again</span>"
 return
 }
 
 save()
-
 setTimeout(()=>location.reload(),400)
-
 }
 
+// EXAM
 function loadExam(){
 
 document.getElementById("mcSection").style.display="none"
@@ -246,82 +271,41 @@ let e=extracts[Math.floor(Math.random()*extracts.length)]
 
 document.getElementById("extract").innerText=e.text
 document.getElementById("examQuestion").innerText=e.question
-
 }
 
+// MARKING (no regression)
 function submitExam(){
 
 let txt=document.getElementById("examAnswer").value.toLowerCase()
 
-let quote=txt.includes("'")
-let technique=txt.includes("metaphor")||txt.includes("simile")||txt.includes("verb")||txt.includes("adjective")
-let effect=txt.includes("suggest")||txt.includes("shows")||txt.includes("makes")
-
 let score=0
 
-if(quote)score++
-if(technique)score++
-if(effect)score++
+if(txt.includes("'")) score++
+if(txt.includes("metaphor")||txt.includes("simile")) score++
+if(txt.includes("suggest")||txt.includes("shows")) score++
 
 let level=""
 
-if(score==1)level="Level 1 (1-2 marks)"
-if(score==2){level="Level 2 (3-5 marks)";points+=20}
-if(score==3){level="Level 3 (6-8 marks)";points+=35}
+if(score==1) level="Level 1 (1–2)"
+if(score==2){ level="Level 2 (3–5)"; points+=20 }
+if(score==3){ level="Level 3 (6–8)"; points+=35 }
 
 document.getElementById("examFeedback").innerText=
-level+" — Try adding quote + technique + effect."
-
-step++
-save()
-
-}
-
-function loadImprove(){
-
-document.getElementById("examSection").style.display="none"
-document.getElementById("improveSection").style.display="block"
-
-document.getElementById("weak").innerText=weakAnswer
-
-}
-
-function submitImprove(){
-
-points+=15
-
-document.getElementById("improveFeedback").innerText="Improvement saved — good work."
+level+" — Add quote + technique + effect"
 
 step=0
 save()
 
-setTimeout(()=>location.reload(),800)
-
+setTimeout(()=>location.reload(),1200)
 }
 
 function save(){
-
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
 localStorage.setItem("streak",streak)
-
 }
 
-loadRewards()
-
-if(step<3){
-
-loadMC()
-
-}else if(step==3){
-
-loadExam()
-
-}else{
-
-loadImprove()
-
-}
+load()
 
 </script>
 
