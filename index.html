@@ -5,63 +5,23 @@
 <title>Bhuna Challenge – GCSE English</title>
 
 <style>
-body{
-margin:0;
-background:#0f172a;
-color:#e5e7eb;
-font-family:-apple-system,system-ui;
-text-align:center;
-padding:20px;
-}
-
-h1{color:#cbd5f5;font-size:22px;}
-
-.card{
-background:#1e293b;
-padding:18px;
-border-radius:14px;
-margin-top:15px;
-}
-
-button{
-background:#334155;
-color:white;
-border:none;
-padding:14px;
-border-radius:10px;
-margin:6px;
-width:90%;
-}
-
-textarea{
-width:92%;
-height:110px;
-border-radius:10px;
-padding:12px;
-background:#f1f5f9;
-}
-
-.progress{background:#334155;height:12px;border-radius:8px;margin-top:12px;}
+body{margin:0;background:#0f172a;color:#e5e7eb;font-family:-apple-system;text-align:center;padding:20px;}
+.card{background:#1e293b;padding:18px;border-radius:14px;margin-top:15px;}
+button{background:#334155;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
+textarea{width:92%;height:110px;border-radius:10px;padding:12px;}
+.progress{background:#334155;height:12px;border-radius:8px;}
 .bar{background:#60a5fa;height:12px;width:0%;}
-
-.reward{display:flex;justify-content:space-between;}
-.locked{opacity:0.4;}
-.unlocked{color:#4ade80;}
-
-.correct{color:#4ade80;}
-.wrong{color:#f87171;}
 .small{font-size:13px;color:#94a3b8;}
 </style>
 </head>
 
 <body>
 
-<h1>Bhuna Challenge – GCSE English</h1>
+<h2>Bhuna Challenge – GCSE English</h2>
 
 <div class="card">
 <p>Points: <span id="points"></span></p>
 <p>Streak: <span id="streak"></span></p>
-
 <p id="summary" class="small"></p>
 
 <h3>Rewards</h3>
@@ -69,44 +29,26 @@ background:#f1f5f9;
 <p id="nextReward"></p>
 
 <div class="progress"><div id="bar" class="bar"></div></div>
-<p id="celebration"></p>
 </div>
 
 <div class="card" id="mcSection">
 <p id="mcQ"></p>
 <div id="mcAnswers"></div>
-<p id="feedback"></p>
 </div>
 
 <div class="card" id="examSection" style="display:none">
+<p id="timer" style="font-weight:bold;"></p>
 <p id="extract"></p>
 <p><b>Question</b></p>
 <p id="questionText"></p>
-<p class="small">Write about language and its effect on the reader.</p>
+<p class="small">Write about language and its effect.</p>
 <textarea id="answer"></textarea>
 <button onclick="submitExam()">Submit</button>
 <p id="modelAnswer"></p>
 </div>
 
-<div class="card" id="improveSection" style="display:none">
-<p><b>Improve this answer:</b></p>
-<p id="weakAnswer"></p>
-<textarea id="improve"></textarea>
-<button onclick="submitImprove()">Improve</button>
-<p id="comparison"></p>
-</div>
-
-<div class="card" id="bossSection" style="display:none">
-<p><b>Bhuna Boss Challenge</b></p>
-<p id="bossExtract"></p>
-<textarea id="bossAnswer"></textarea>
-<button onclick="submitBoss()">Submit</button>
-<p id="bossModel"></p>
-</div>
-
 <script>
 
-// DATA
 let points=+localStorage.getItem("points")||0
 let step=+localStorage.getItem("step")||0
 let streak=+localStorage.getItem("streak")||0
@@ -114,9 +56,8 @@ let sessions=+localStorage.getItem("sessions")||0
 let correct=+localStorage.getItem("correct")||0
 let total=+localStorage.getItem("total")||0
 let difficulty=+localStorage.getItem("difficulty")||1
-let lastReward=+localStorage.getItem("lastReward")||0
 
-// STREAK
+// streak
 let today=new Date().toDateString()
 let lastDate=localStorage.getItem("lastDate")
 if(lastDate){
@@ -126,80 +67,33 @@ else if(diff>1)streak=1
 }else streak=1
 localStorage.setItem("lastDate",today)
 
-// QUESTIONS
-const easy=[
-["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1],
-["He ran quickly","What is this?",["Verb","Noun","Adjective"],0]
-]
-
-const medium=[
-["The crowd exploded with noise","Technique?",["Metaphor","Personification","Simile"],0],
-["He darted forward","Suggests?",["Speed","Fear","Pain"],0]
-]
-
-const hard=[
-["The stadium became a cauldron of noise","Technique?",["Metaphor","Fact","Command"],0],
-["The silence suffocated the room","Effect?",["Tension","Happiness","Calm"],0]
-]
-
-// GCSE EXTRACTS
+// extracts
 const extracts=[
 {
 text:`Lines 1–4
 
-The crowd roared as Frimpong charged forward. The stadium trembled with noise, a wave of sound crashing over the pitch.`,
+The crowd roared as Frimpong charged forward. The stadium trembled with noise.`,
 focus:"How does the writer use language to describe the atmosphere?"
 },
 {
 text:`Lines 2–5
 
-Wirtz glided past defenders, moving like a shadow. The crowd held its breath before erupting into noise.`,
-focus:"How does the writer use language to describe Wirtz’s movement?"
-},
-{
-text:`Lines 1–4
-
-The silence filled the stadium. It pressed down on the players, heavy and suffocating.`,
-focus:"How does the writer use language to describe the mood?"
+Wirtz glided past defenders like a shadow. The crowd held its breath.`,
+focus:"How does the writer describe Wirtz’s movement?"
 }
 ]
 
-const weak="The writer uses words to show excitement."
-const model="The writer uses the word 'exploded' which suggests intensity, making the reader feel the excitement."
-
-function getQuestions(){
-if(difficulty===1)return easy
-if(difficulty===2)return medium
-return hard
-}
-
-// LOAD
+// load
 function load(){
-
 document.getElementById("points").innerText=points
 document.getElementById("streak").innerText=streak
-
-let acc = total ? Math.round((correct/total)*100) : 0
-
-document.getElementById("summary").innerText=
-"Accuracy: "+acc+"% | Sessions: "+sessions
-
-updateRewards()
-
-if(sessions>0 && sessions%5===0 && step===0){
-showBoss();return
-}
-
 if(step<3)loadMC()
-else if(step===3)showExam()
-else if(step===4)showImprove()
+else showExam()
 }
 
-// MCQ
+// MC
 function loadMC(){
-let qs=getQuestions()
-let q=qs[Math.floor(Math.random()*qs.length)]
-
+let q=["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1]
 document.getElementById("mcQ").innerText=q[0]+" — "+q[1]
 
 let html=""
@@ -210,122 +104,82 @@ document.getElementById("mcAnswers").innerHTML=html
 }
 
 function answer(i,c){
-total++
-if(i===c){points+=10;correct++;step++}
+if(i===c){points+=10;step++}
 save()
-setTimeout(()=>location.reload(),300)
+location.reload()
 }
 
-// EXAM
+// exam
+let timeLeft=300
+let timer
+
+function startTimer(){
+timer=setInterval(()=>{
+timeLeft--
+document.getElementById("timer").innerText="⏱ "+timeLeft+"s"
+if(timeLeft<=0){
+clearInterval(timer)
+submitExam()
+}
+},1000)
+}
+
 function showExam(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("examSection").style.display="block"
 
-let ex = extracts[Math.floor(Math.random()*extracts.length)]
+let ex=extracts[Math.floor(Math.random()*extracts.length)]
+document.getElementById("extract").innerText=ex.text
+document.getElementById("questionText").innerText=ex.focus+" (8 marks)"
 
-document.getElementById("extract").innerText = ex.text
-document.getElementById("questionText").innerText =
-ex.focus + " (8 marks)"
+startTimer()
 }
 
-// AUTO BUILDER
-function buildBetterAnswer(txt){
-let word="'language'"
-if(txt.includes("roar")) word="'roared'"
-if(txt.includes("explod")) word="'exploded'"
-if(txt.includes("silent")) word="'silence'"
-
-return "The word "+word+" suggests intensity, making the reader feel the atmosphere."
-}
-
-// MARKING
+// LEVEL MARKING
 function submitExam(){
 
-let txt = document.getElementById("answer").value.toLowerCase()
+clearInterval(timer)
 
-let hasQuote = txt.includes("'") || txt.includes('"')
-let hasTechnique = txt.includes("metaphor") || txt.includes("simile") || txt.includes("verb")
-let hasEffect = txt.includes("suggest") || txt.includes("shows") || txt.includes("makes")
+let txt=document.getElementById("answer").value.toLowerCase()
 
-let score=0
-let feedback=[]
+let hasQuote = txt.includes("'")
+let hasTechnique = txt.includes("metaphor")||txt.includes("verb")
+let hasEffect = txt.includes("suggest")||txt.includes("shows")
 
-if(hasQuote)score++; else feedback.push("Add a quote")
-if(hasTechnique)score++; else feedback.push("Name technique")
-if(hasEffect)score++; else feedback.push("Explain effect")
+let level=1
 
-let improved = buildBetterAnswer(txt)
+if(hasQuote && hasTechnique) level=2
+if(hasQuote && hasTechnique && hasEffect) level=3
 
-if(score===3){
-points+=40
-document.getElementById("modelAnswer").innerText="Strong answer\n\n"+improved
-}else if(score===2){
+let feedback=""
+
+if(level===1){
+feedback="Level 1 (1–2 marks)\n\nTo improve: add a quote and technique."
+}
+if(level===2){
 points+=25
-document.getElementById("modelAnswer").innerText="Nearly there:\n"+feedback.join("\n")+"\n\nTry:\n"+improved
-}else{
-document.getElementById("modelAnswer").innerText="Improve:\n"+feedback.join("\n")+"\n\nTry:\n"+improved
+feedback="Level 2 (3–5 marks)\n\nTo reach Level 3: explain the effect (this suggests…)."
+}
+if(level===3){
+points+=40
+feedback="Level 3 (6–8 marks)\n\nStrong Grade 4 answer."
 }
 
-step=4
-save()
-setTimeout(()=>location.reload(),2000)
-}
+document.getElementById("modelAnswer").innerText=feedback
 
-// IMPROVE
-function showImprove(){
-document.getElementById("examSection").style.display="none"
-document.getElementById("improveSection").style.display="block"
-document.getElementById("weakAnswer").innerText=weak
-}
-
-function submitImprove(){
-points+=20
-sessions++
 step=0
-save()
-}
-
-// BOSS
-function showBoss(){
-document.getElementById("mcSection").style.display="none"
-document.getElementById("bossSection").style.display="block"
-document.getElementById("bossExtract").innerText="Describe the atmosphere."
-}
-
-function submitBoss(){
-points+=60
 sessions++
-step=0
 save()
 }
 
-// REWARDS
+// rewards
 function updateRewards(){
-
-let rewards=[
-{name:"Onion Bhaji",pts:150},
-{name:"Sag Aloo",pts:300},
-{name:"Rice",pts:450},
-{name:"Chicken Bhuna",pts:600}
-]
-
+let rewards=[150,300,450,600]
 let html=""
 rewards.forEach(r=>{
-let unlocked = points >= r.pts
-html += `<div class="reward ${unlocked?'unlocked':'locked'}">
-<span>${r.name}</span><span>${r.pts}</span></div>`
+html+=`<p>${points>=r?"✓":"○"} ${r}</p>`
 })
-
 document.getElementById("rewardList").innerHTML=html
-
-let next = rewards.find(r=>points < r.pts)
-
-if(next){
-document.getElementById("nextReward").innerText=
-"Next: "+next.name+" ("+(next.pts-points)+" pts)"
-}
-
-document.getElementById("bar").style.width=(points/600*100)+"%"
 }
 
 function save(){
@@ -333,9 +187,6 @@ localStorage.setItem("points",points)
 localStorage.setItem("step",step)
 localStorage.setItem("streak",streak)
 localStorage.setItem("sessions",sessions)
-localStorage.setItem("correct",correct)
-localStorage.setItem("total",total)
-localStorage.setItem("difficulty",difficulty)
 }
 
 load()
