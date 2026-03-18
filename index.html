@@ -5,91 +5,30 @@
 <title>Bhuna Challenge – GCSE English 🍛</title>
 
 <style>
-body{
-background:#0b0b0b;
-color:white;
-font-family:-apple-system, Arial;
-text-align:center;
-padding:20px;
-}
-
+body{background:#0b0b0b;color:white;font-family:-apple-system;text-align:center;padding:20px;}
 h1{color:#c8102e;}
-
-.card{
-background:#1a1a1a;
-padding:16px;
-border-radius:12px;
-margin-top:15px;
-}
-
-button{
-background:#c8102e;
-color:white;
-border:none;
-padding:12px;
-border-radius:10px;
-margin:5px;
-width:85%;
-max-width:340px;
-}
-
-textarea{
-width:90%;
-height:120px;
-border-radius:10px;
-padding:10px;
-color:black;
-}
-
-.progress{
-background:#333;
-height:16px;
-border-radius:10px;
-margin-top:10px;
-}
-
-.bar{
-background:#c8102e;
-height:16px;
-width:0%;
-border-radius:10px;
-}
-
-#feedback{
-margin-top:10px;
-font-weight:bold;
-}
-
-#celebration{
-display:none;
-font-size:22px;
-margin-top:15px;
-color:#00ffcc;
-animation: pop 0.6s ease;
-}
-
-@keyframes pop{
-0%{transform:scale(0.5);opacity:0;}
-100%{transform:scale(1);opacity:1;}
-}
+.card{background:#1a1a1a;padding:16px;border-radius:12px;margin-top:15px;}
+button{background:#c8102e;color:white;border:none;padding:12px;border-radius:10px;margin:5px;width:85%;}
+textarea{width:90%;height:110px;border-radius:10px;padding:10px;color:black;}
+.progress{background:#333;height:16px;border-radius:10px;margin-top:10px;}
+.bar{background:#c8102e;height:16px;width:0%;border-radius:10px;}
+.small{font-size:13px;color:#ccc;}
 </style>
-</head>
 
+</head>
 <body>
 
 <h1>🔥 Bhuna Challenge – GCSE English</h1>
 
 <div class="card">
-<p><b>Points:</b> <span id="points"></span></p>
-<p><b>🔥 Streak:</b> <span id="streak"></span></p>
+<p>Points: <span id="points"></span></p>
+<p>🔥 Streak: <span id="streak"></span></p>
+<p id="focus"></p>
+<p id="summary" class="small"></p>
 <p id="nextReward"></p>
 <p id="unlocked"></p>
 
-<div class="progress">
-<div id="bar" class="bar"></div>
-</div>
-
-<div id="celebration"></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
 </div>
 
 <div class="card" id="mcSection">
@@ -99,178 +38,217 @@ animation: pop 0.6s ease;
 </div>
 
 <div class="card" id="examSection" style="display:none">
-<p><b>Extract:</b></p>
 <p id="extract"></p>
-
-<p><b>Question:</b></p>
-<p>How does the writer use language to create an effect?</p>
-
+<p><b>How does the writer create an effect?</b></p>
 <textarea id="answer"></textarea>
-<button onclick="submitExam()">Submit Answer</button>
-
-<p id="modelAnswer" style="margin-top:10px;"></p>
+<button onclick="submitExam()">Submit</button>
+<p id="modelAnswer"></p>
 </div>
 
-<div class="card" id="complete" style="display:none">
-<h2>✅ Session Complete</h2>
-<button onclick="restart()">Next Session</button>
+<div class="card" id="improveSection" style="display:none">
+<p><b>Improve this answer:</b></p>
+<p id="weakAnswer"></p>
+<textarea id="improve"></textarea>
+<button onclick="submitImprove()">Improve</button>
+<p id="comparison"></p>
+</div>
+
+<div class="card" id="bossSection" style="display:none">
+<p><b>🏆 Bhuna Boss Challenge</b></p>
+<p id="bossExtract"></p>
+<textarea id="bossAnswer"></textarea>
+<button onclick="submitBoss()">Submit</button>
+<p id="bossModel"></p>
 </div>
 
 <script>
 
-let points = parseInt(localStorage.getItem("points")) || 0
-let step = parseInt(localStorage.getItem("step")) || 0
-let streak = parseInt(localStorage.getItem("streak")) || 0
-let used = JSON.parse(localStorage.getItem("usedQs")) || []
-let lastReward = parseInt(localStorage.getItem("lastReward")) || 0
+let points=+localStorage.getItem("points")||0
+let step=+localStorage.getItem("step")||0
+let streak=+localStorage.getItem("streak")||0
+let sessions=+localStorage.getItem("sessions")||0
+let correct=+localStorage.getItem("correct")||0
+let total=+localStorage.getItem("total")||0
+let difficulty=+localStorage.getItem("difficulty")||1
 
 // streak logic
-let today = new Date().toDateString()
-let lastDate = localStorage.getItem("lastDate")
-
+let today=new Date().toDateString()
+let lastDate=localStorage.getItem("lastDate")
 if(lastDate){
-let diff = (new Date(today) - new Date(lastDate))/(1000*60*60*24)
-if(diff===1) streak++
-else if(diff>1) streak=1
+let diff=(new Date(today)-new Date(lastDate))/(1000*60*60*24)
+if(diff===1)streak++
+else if(diff>1)streak=1
 }else streak=1
+localStorage.setItem("lastDate",today)
 
-localStorage.setItem("lastDate", today)
-
-const mcQuestions = [
-["The crowd roared as Frimpong scored","Which technique?",["Metaphor","Personification","Simile"],1],
-["Wirtz glided past defenders","What does 'glided' suggest?",["Ease","Fear","Pain"],0],
-["The ball flew like a rocket","Technique?",["Simile","Fact","List"],0],
-["Rain hammered the pitch","Suggests?",["Violence","Calm","Soft"],0],
-["Fans exploded with joy","Strongest word?",["fans","exploded","joy"],1],
-["He crept through defenders","Meaning?",["Stealth","Speed","Power"],0]
+// question banks
+const easy=[
+["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1],
+["He ran quickly","What is this?",["Verb","Noun","Adjective"],0]
 ]
 
-const extracts = [
-"The stadium roared as Frimpong fired the ball into the net.",
-"The wind howled through empty streets.",
-"Fans erupted as Wirtz curled the ball into the top corner."
+const medium=[
+["The crowd exploded with noise","Technique?",["Metaphor","Personification","Simile"],0],
+["He darted forward","Suggests?",["Speed","Fear","Pain"],0]
 ]
+
+const hard=[
+["The stadium became a cauldron of noise","Technique?",["Metaphor","Fact","Command"],0],
+["The silence suffocated the room","Effect?",["Tension","Happiness","Calm"],0]
+]
+
+const extracts=[
+"The crowd erupts as Frimpong smashes it in, the noise crashing like thunder.",
+"Wirtz glides past defenders, the stadium holding its breath before exploding.",
+"The silence wraps around him, heavy and suffocating."
+]
+
+const weak="The writer uses words to show excitement."
+const model="The writer uses the word 'exploded' which suggests intensity, making the reader feel the excitement."
+
+function getQuestions(){
+if(difficulty===1)return easy
+if(difficulty===2)return medium
+return hard
+}
 
 function load(){
-document.getElementById("points").innerText = points
-document.getElementById("streak").innerText = streak
+
+document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
+
+let acc = total ? Math.round((correct/total)*100) : 0
+
+document.getElementById("summary").innerText=
+"Accuracy: "+acc+"% | Sessions: "+sessions
+
+document.getElementById("focus").innerText=
+acc<60?"🎯 Focus: Explain effects clearly":""
+
 updateRewards()
 
-if(step<3) loadMC()
-else if(step===3) showExam()
-else showComplete()
+if(sessions>0 && sessions%5===0 && step===0){
+showBoss();return
+}
+
+if(step<3)loadMC()
+else if(step===3)showExam()
+else if(step===4)showImprove()
 }
 
 function loadMC(){
-if(used.length===mcQuestions.length) used=[]
-let available = mcQuestions.filter((q,i)=>!used.includes(i))
-let i = Math.floor(Math.random()*available.length)
-let q = available[i]
-let realIndex = mcQuestions.indexOf(q)
-used.push(realIndex)
-localStorage.setItem("usedQs", JSON.stringify(used))
+let qs=getQuestions()
+let q=qs[Math.floor(Math.random()*qs.length)]
 
-document.getElementById("mcQ").innerText = q[0]+" — "+q[1]
+document.getElementById("mcQ").innerText=q[0]+" — "+q[1]
 
 let html=""
-q[2].forEach((a,idx)=>{
-html += `<button onclick="answer(${idx},${q[3]})">${a}</button>`
+q[2].forEach((a,i)=>{
+html+=`<button onclick="answer(${i},${q[3]})">${a}</button>`
 })
-document.getElementById("mcAnswers").innerHTML = html
+document.getElementById("mcAnswers").innerHTML=html
 }
 
 function answer(i,c){
-let f = document.getElementById("feedback")
+total++
+let f=document.getElementById("feedback")
+
 if(i===c){
 points+=10
+correct++
 step++
 f.innerText="✅ Correct"
 }else{
-f.innerText="❌ Think about the effect"
+f.innerText="❌ Think about effect"
 }
+
+adjustDifficulty()
 save()
 setTimeout(()=>location.reload(),500)
+}
+
+function adjustDifficulty(){
+let acc = total ? correct/total : 0
+if(acc>0.8 && difficulty<3)difficulty++
+if(acc<0.5 && difficulty>1)difficulty--
 }
 
 function showExam(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("examSection").style.display="block"
-document.getElementById("extract").innerText =
+
+document.getElementById("extract").innerText=
 extracts[Math.floor(Math.random()*extracts.length)]
 }
 
 function submitExam(){
 let txt=document.getElementById("answer").value.toLowerCase()
-let model = "The writer uses powerful language like 'roared' which suggests intensity. This makes the reader feel the excitement."
-
-if(txt.includes("writer") && txt.includes("suggest")){
+if(txt.includes("writer")&&txt.includes("suggest")){
 points+=40
-document.getElementById("modelAnswer").innerText="✅ Good answer\n\nExample:\n"+model
+document.getElementById("modelAnswer").innerText="✅ Strong answer"
 }else{
-document.getElementById("modelAnswer").innerText="❌ Improve it:\nUse 'The writer uses... This suggests...'\n\nExample:\n"+model
+document.getElementById("modelAnswer").innerText="❌ Use 'This suggests...'"
 }
-
 step=4
 save()
 setTimeout(()=>location.reload(),1500)
 }
 
-function showComplete(){
-document.getElementById("mcSection").style.display="none"
+function showImprove(){
 document.getElementById("examSection").style.display="none"
-document.getElementById("complete").style.display="block"
+document.getElementById("improveSection").style.display="block"
+document.getElementById("weakAnswer").innerText=weak
 }
 
-function restart(){
+function submitImprove(){
+let user=document.getElementById("improve").value
+
+document.getElementById("comparison").innerText=
+"Before: "+weak+"\n\nYour answer: "+user+"\n\nModel: "+model
+
+points+=20
+sessions++
 step=0
 save()
-location.reload()
+}
+
+function showBoss(){
+document.getElementById("mcSection").style.display="none"
+document.getElementById("bossSection").style.display="block"
+
+document.getElementById("bossExtract").innerText=
+"The stadium erupts as the ball rockets into the net, sending waves of noise crashing through the crowd."
+}
+
+function submitBoss(){
+points+=60
+sessions++
+document.getElementById("bossModel").innerText=model
+step=0
+save()
 }
 
 function updateRewards(){
 let rewards=[150,300,450,600]
+let next=rewards.find(r=>points<r)
 
-let next = rewards.find(r=>points<r)
+document.getElementById("nextReward").innerText=
+next?"Next reward at "+next:"All rewards unlocked"
 
-document.getElementById("nextReward").innerText =
-next ? "Next reward at "+next+" points" : "All rewards unlocked 🍛"
-
-document.getElementById("unlocked").innerText =
-"Unlocked rewards: "+rewards.filter(r=>points>=r).join(", ")
+document.getElementById("unlocked").innerText=
+"Unlocked: "+rewards.filter(r=>points>=r).join(",")
 
 document.getElementById("bar").style.width=(points/600*100)+"%"
-
-// explosion
-if(points>=150 && lastReward<150){
-celebrate("🍛 Onion Bhaji Unlocked!")
-lastReward=150
-}
-if(points>=300 && lastReward<300){
-celebrate("🍛 Sag Aloo Unlocked!")
-lastReward=300
-}
-if(points>=450 && lastReward<450){
-celebrate("🍛 Rice Unlocked!")
-lastReward=450
-}
-if(points>=600 && lastReward<600){
-celebrate("🍛 Chicken Bhuna Unlocked!")
-lastReward=600
-}
-
-localStorage.setItem("lastReward", lastReward)
-}
-
-function celebrate(msg){
-let el=document.getElementById("celebration")
-el.innerText=msg+" 💥"
-el.style.display="block"
 }
 
 function save(){
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
 localStorage.setItem("streak",streak)
+localStorage.setItem("sessions",sessions)
+localStorage.setItem("correct",correct)
+localStorage.setItem("total",total)
+localStorage.setItem("difficulty",difficulty)
 }
 
 load()
