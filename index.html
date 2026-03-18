@@ -46,6 +46,7 @@ border:1px solid #ccc;
 .good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
 .model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
 .improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
+.coach{background:#f0f9ff;padding:10px;border-radius:10px;margin-top:10px}
 
 .progress{height:10px;background:#e5e7eb;border-radius:8px}
 .bar{height:10px;background:#2563eb;width:0%}
@@ -73,7 +74,6 @@ border:1px solid #ccc;
 
 <div class="card" id="mc"></div>
 <div class="card" id="exam" style="display:none"></div>
-<div class="card" id="improve"></div>
 
 <script>
 
@@ -117,25 +117,20 @@ document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
 // QUESTIONS
 const questions=[
 ["The word 'surged' suggests...","Best answer?",["Power and speed","Calm movement","Weakness"],0],
-["The phrase 'wave of sound' suggests...","Best answer?",["Overwhelming noise","Quiet","Confusion"],0],
-["The verb 'exploded' implies...","Best answer?",["Sudden intensity","Slow build","Stillness"],0]
+["The phrase 'wave of sound' suggests...","Best answer?",["Overwhelming noise","Quiet","Confusion"],0]
 ]
 
-// EXTRACTS
-const extracts=[
-{
+// EXTRACT
+const extract={
 text:`The crowd roared as Frimpong surged forward. The sound crashed across the stadium.`,
 q:"How does the writer describe the atmosphere? (8 marks)",
-model:`The verb "surged" suggests powerful, unstoppable movement, reflecting intensity. The metaphor "crashed across the stadium" implies overwhelming noise, creating a dramatic atmosphere.`
+model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "crashed across the stadium" implies overwhelming noise, creating a dramatic atmosphere.`
 }
-]
-
-let currentModel=""
 
 // FLOW
 function load(){
 loadRewards()
-if(step<3) loadMC()
+if(step<2) loadMC()
 else loadExam()
 }
 
@@ -156,66 +151,72 @@ location.reload()
 
 // EXAM
 function loadExam(){
-let e=extracts[Math.floor(Math.random()*extracts.length)]
-currentModel=e.model
-
 document.getElementById("mc").style.display="none"
 document.getElementById("exam").style.display="block"
 
 document.getElementById("exam").innerHTML=`
-<p>${e.text}</p>
-<p><b>${e.q}</b></p>
+<p>${extract.text}</p>
+<p><b>${extract.q}</b></p>
 <textarea id="ansBox"></textarea>
 <button onclick="mark()">Submit</button>
 <div id="fb"></div>
 `
 }
 
-// SMART MARKING
+// SMART COACH MARKING
 function mark(){
 
 let raw=document.getElementById("ansBox").value
 let t=raw.toLowerCase()
 
-let feedback=[]
-
-// detection
 let hasQuote = t.includes("'")||t.includes('"')
-let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")
-let hasEffect = t.includes("suggest")||t.includes("shows")||t.includes("implies")
-let hasZoom = t.includes("word")||t.includes("verb")||t.includes("phrase")
+let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")
+let hasEffect = t.includes("suggest")||t.includes("shows")
+let hasZoom = t.includes("word")||t.includes("verb")
 
-// feedback logic
-if(!hasQuote) feedback.push("👉 Add a short quote from the text")
-if(!hasTechnique) feedback.push("👉 Name the language technique")
-if(!hasEffect) feedback.push("👉 Explain what it suggests")
-if(mode==="6" && !hasZoom) feedback.push("👉 Zoom in on a key word")
+let feedback=[]
+let coach=[]
 
-// scoring
-let score = [hasQuote,hasTechnique,hasEffect,(mode==="6"?hasZoom:true)].filter(Boolean).length
-
-let level=""
-if(mode==="4"){
-if(score<=1) level="Level 1"
-if(score==2){level="Level 2";points+=20}
-if(score>=3){level="Level 3";points+=35}
-}else{
-if(score<=2) level="Below Grade 6"
-if(score==3){level="Nearly Grade 6";points+=25}
-if(score>=4){level="Grade 6+ 🔥";points+=45}
+if(!hasQuote){
+feedback.push("Missing quote")
+coach.push("👉 Try: The word 'surged' suggests...")
 }
 
-// output
+if(!hasTechnique){
+feedback.push("Missing technique")
+coach.push("👉 Name it: metaphor / verb / simile")
+}
+
+if(!hasEffect){
+feedback.push("Missing explanation")
+coach.push("👉 Add: this suggests that...")
+}
+
+if(mode==="6" && !hasZoom){
+feedback.push("No word-level analysis")
+coach.push("👉 Zoom in on one word")
+}
+
+let score=[hasQuote,hasTechnique,hasEffect,(mode==="6"?hasZoom:true)].filter(Boolean).length
+
+let level=""
+if(score<=1) level="Level 1"
+else if(score==2) level="Level 2"
+else if(score>=3) level="Level 3 / Grade 6 🔥"
+
 document.getElementById("fb").innerHTML=
 `<p><b>${level}</b></p>
 
 <div class="good"><b>Your answer:</b><br>${raw}</div>
 
-<div class="improve"><b>How to improve:</b><br>${feedback.join("<br>")||"Strong answer — well done"}</div>
+<div class="improve"><b>What’s missing:</b><br>${feedback.join("<br>")||"Nothing major"}</div>
 
-<div class="model"><b>Grade 6 model:</b><br>${currentModel}</div>
+<div class="coach"><b>How to fix it:</b><br>${coach.join("<br>")||"Excellent — keep this structure"}</div>
+
+<div class="model"><b>Grade 6 model:</b><br>${extract.model}</div>
 `
 
+points+=20
 step=0
 save()
 }
