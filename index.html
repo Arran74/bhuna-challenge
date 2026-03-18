@@ -33,9 +33,7 @@ width:90%;
 transition:0.2s;
 }
 
-button:disabled{
-opacity:0.7;
-}
+button:disabled{opacity:0.7}
 
 textarea{
 width:92%;
@@ -70,6 +68,13 @@ font-size:18px;
 
 <h2>GCSE English – Bhuna Challenge</h2>
 
+<div class="card">
+<b>Mode:</b><br>
+<button onclick="setMode('4')">Grade 4</button>
+<button onclick="setMode('6')">Grade 6</button>
+<p id="modeDisplay"></p>
+</div>
+
 <div id="popup"></div>
 
 <div class="card">
@@ -88,6 +93,18 @@ font-size:18px;
 <div class="card" id="improve" style="display:none"></div>
 
 <script>
+
+// MODE
+let mode=localStorage.getItem("mode")||"4"
+
+function setMode(m){
+mode=m
+localStorage.setItem("mode",m)
+location.reload()
+}
+
+document.getElementById("modeDisplay").innerText=
+mode==="6" ? "Grade 6 Mode 🔥" : "Grade 4 Mode"
 
 // STATE
 let points=+localStorage.getItem("points")||0
@@ -148,14 +165,14 @@ if(newItem) popup("🎉 "+newItem+" unlocked!")
 
 // QUESTIONS
 const questions=[
+
 ["The crowd roared","Which technique?",["Verb","Metaphor","Fact"],0],
-["The stadium exploded with noise","Technique?",["Metaphor","Simile","Verb"],0],
-["The wind screamed","Technique?",["Personification","Fact","Opinion"],0],
-["Her heart raced like a drum","Technique?",["Simile","Metaphor","Verb"],0],
-["The silence filled the room","Effect?",["Tension","Joy","Calm"],0],
-["The crowd held its breath","Effect?",["Suspense","Relaxation","Boredom"],0],
-["He crept slowly","Suggests?",["Stealth","Happiness","Anger"],0],
-["The lights flickered","Creates?",["Tension","Calm","Humour"],0]
+
+["The word 'surged' suggests...","Best answer?",["Power and speed","Calm movement","Weakness"],0],
+["The phrase 'wave of sound' suggests...","Best answer?",["Overwhelming noise","Quiet","Confusion"],0],
+["The verb 'exploded' implies...","Best answer?",["Sudden intensity","Slow build","Stillness"],0],
+["The word 'shadow' suggests...","Best answer?",["Stealth and danger","Warmth","Noise"],0]
+
 ]
 
 // EXTRACTS
@@ -200,7 +217,6 @@ function ans(i,c){
 let buttons=document.querySelectorAll("#mc button")
 buttons.forEach(b=>b.disabled=true)
 
-// highlight
 document.getElementById("btn"+c).style.background="#059669"
 
 if(i!=c){
@@ -255,19 +271,34 @@ else feedback.push("Add a quote")
 if(t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")) score++
 else feedback.push("Name the technique")
 
-if(t.includes("suggest")||t.includes("shows")) score++
+if(t.includes("suggest")||t.includes("shows")||t.includes("implies")) score++
 else feedback.push("Explain the effect")
 
+if(mode==="6"){
+if(t.includes("word")||t.includes("verb")||t.includes("phrase")){
+score++
+}else{
+feedback.push("Zoom in on a specific word")
+}
+}
+
 let msg=""
-if(score==1) msg="Level 1 (1–2 marks)"
-if(score==2){ msg="Level 2 (3–5 marks)"; points+=20 }
-if(score==3){ msg="Level 3 (6–8 marks)"; points+=35 }
+
+if(mode==="4"){
+if(score==1) msg="Level 1 (1–2)"
+if(score==2){ msg="Level 2 (3–5)"; points+=20 }
+if(score>=3){ msg="Level 3 (6–8)"; points+=35 }
+}else{
+if(score<=2) msg="Below Grade 6"
+if(score==3){ msg="Approaching Grade 6"; points+=25 }
+if(score>=4){ msg="Grade 6+ 🔥"; points+=45 }
+}
 
 document.getElementById("fb").innerText =
 msg + "\n\n" +
-(score===3
-? "Strong answer."
-: "Improve:\n"+feedback.join("\n"))
+(score>=3
+? "Clear, developed explanation."
+: "To improve:\n"+feedback.join("\n"))
 
 step++
 save()
@@ -293,7 +324,7 @@ function done(){
 points+=15
 
 document.getElementById("impFb").innerText=
-"Better — include quote + technique + effect next time."
+"Better — include quote + technique + word-level analysis."
 
 step=0
 save()
