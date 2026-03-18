@@ -5,30 +5,120 @@
 <title>Bhuna Challenge – GCSE English 🍛</title>
 
 <style>
-body{background:#0b0b0b;color:white;font-family:-apple-system;text-align:center;padding:20px;}
-h1{color:#c8102e;}
-.card{background:#1a1a1a;padding:16px;border-radius:12px;margin-top:15px;}
-button{background:#c8102e;color:white;border:none;padding:12px;border-radius:10px;margin:5px;width:85%;}
-textarea{width:90%;height:110px;border-radius:10px;padding:10px;color:black;}
-.progress{background:#333;height:16px;border-radius:10px;margin-top:10px;}
-.bar{background:#c8102e;height:16px;width:0%;border-radius:10px;}
-.small{font-size:13px;color:#ccc;}
-</style>
+body{
+margin:0;
+background:linear-gradient(180deg,#0a0a0a,#121212);
+color:#f5f5f5;
+font-family:-apple-system,system-ui;
+text-align:center;
+padding:20px;
+}
 
+h1{
+color:#e10600;
+font-size:22px;
+margin-bottom:10px;
+}
+
+.card{
+background:linear-gradient(145deg,#1c1c1c,#111);
+padding:18px;
+border-radius:16px;
+margin-top:15px;
+box-shadow:0 6px 18px rgba(0,0,0,0.5);
+}
+
+button{
+background:#e10600;
+color:white;
+border:none;
+padding:14px;
+border-radius:14px;
+margin:6px;
+width:90%;
+font-weight:600;
+font-size:15px;
+}
+
+button:active{
+transform:scale(0.96);
+}
+
+textarea{
+width:92%;
+height:110px;
+border-radius:14px;
+padding:12px;
+background:#f5f5f5;
+font-size:15px;
+}
+
+.progress{
+background:#2a2a2a;
+height:14px;
+border-radius:10px;
+margin-top:12px;
+overflow:hidden;
+}
+
+.bar{
+background:linear-gradient(90deg,#e10600,#ff3b30);
+height:14px;
+width:0%;
+transition:0.4s;
+}
+
+.small{font-size:13px;color:#bbb;}
+
+.reward{
+text-align:left;
+padding:6px 0;
+font-size:14px;
+}
+
+.locked{opacity:0.4;}
+.unlocked{color:#00d084;}
+
+#feedback{
+margin-top:10px;
+font-weight:600;
+}
+
+.correct{color:#00d084;}
+.wrong{color:#ff4d4d;}
+
+#celebration{
+display:none;
+font-size:20px;
+margin-top:10px;
+color:#00d084;
+animation:pop 0.5s ease;
+}
+
+@keyframes pop{
+0%{transform:scale(0.8);opacity:0;}
+100%{transform:scale(1);opacity:1;}
+}
+</style>
 </head>
+
 <body>
 
 <h1>🔥 Bhuna Challenge – GCSE English</h1>
 
 <div class="card">
-<p>Points: <span id="points"></span></p>
+<p><b>Points:</b> <span id="points"></span></p>
 <p>🔥 Streak: <span id="streak"></span></p>
+
 <p id="focus"></p>
 <p id="summary" class="small"></p>
+
+<h3>🍛 Rewards</h3>
+<div id="rewardList"></div>
 <p id="nextReward"></p>
-<p id="unlocked"></p>
 
 <div class="progress"><div id="bar" class="bar"></div></div>
+<div id="celebration"></div>
 </div>
 
 <div class="card" id="mcSection">
@@ -70,8 +160,9 @@ let sessions=+localStorage.getItem("sessions")||0
 let correct=+localStorage.getItem("correct")||0
 let total=+localStorage.getItem("total")||0
 let difficulty=+localStorage.getItem("difficulty")||1
+let lastReward=+localStorage.getItem("lastReward")||0
 
-// streak logic
+// streak
 let today=new Date().toDateString()
 let lastDate=localStorage.getItem("lastDate")
 if(lastDate){
@@ -81,7 +172,7 @@ else if(diff>1)streak=1
 }else streak=1
 localStorage.setItem("lastDate",today)
 
-// question banks
+// questions
 const easy=[
 ["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1],
 ["He ran quickly","What is this?",["Verb","Noun","Adjective"],0]
@@ -157,9 +248,11 @@ if(i===c){
 points+=10
 correct++
 step++
-f.innerText="✅ Correct"
+f.className="correct"
+f.innerText="✔ Correct"
 }else{
-f.innerText="❌ Think about effect"
+f.className="wrong"
+f.innerText="✖ Think about the effect"
 }
 
 adjustDifficulty()
@@ -176,7 +269,6 @@ if(acc<0.5 && difficulty>1)difficulty--
 function showExam(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("examSection").style.display="block"
-
 document.getElementById("extract").innerText=
 extracts[Math.floor(Math.random()*extracts.length)]
 }
@@ -185,13 +277,13 @@ function submitExam(){
 let txt=document.getElementById("answer").value.toLowerCase()
 if(txt.includes("writer")&&txt.includes("suggest")){
 points+=40
-document.getElementById("modelAnswer").innerText="✅ Strong answer"
+document.getElementById("modelAnswer").innerText="✔ Strong answer"
 }else{
-document.getElementById("modelAnswer").innerText="❌ Use 'This suggests...'"
+document.getElementById("modelAnswer").innerText="✖ Use 'This suggests...'"
 }
 step=4
 save()
-setTimeout(()=>location.reload(),1500)
+setTimeout(()=>location.reload(),1200)
 }
 
 function showImprove(){
@@ -215,7 +307,6 @@ save()
 function showBoss(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("bossSection").style.display="block"
-
 document.getElementById("bossExtract").innerText=
 "The stadium erupts as the ball rockets into the net, sending waves of noise crashing through the crowd."
 }
@@ -229,16 +320,52 @@ save()
 }
 
 function updateRewards(){
-let rewards=[150,300,450,600]
-let next=rewards.find(r=>points<r)
 
-document.getElementById("nextReward").innerText=
-next?"Next reward at "+next:"All rewards unlocked"
+let rewards=[
+{name:"Onion Bhaji",pts:150},
+{name:"Sag Aloo",pts:300},
+{name:"Rice",pts:450},
+{name:"Chicken Bhuna",pts:600}
+]
 
-document.getElementById("unlocked").innerText=
-"Unlocked: "+rewards.filter(r=>points>=r).join(",")
+let html=""
 
-document.getElementById("bar").style.width=(points/600*100)+"%"
+rewards.forEach(r=>{
+let unlocked = points >= r.pts
+html += `<div class="reward ${unlocked?'unlocked':'locked'}">
+${unlocked?'🟢':'🔒'} ${r.name} (${r.pts})
+</div>`
+})
+
+document.getElementById("rewardList").innerHTML = html
+
+let next = rewards.find(r=>points < r.pts)
+
+if(next){
+let remaining = next.pts - points
+document.getElementById("nextReward").innerText =
+"Next: "+next.name+" — "+remaining+" points to go"
+}else{
+document.getElementById("nextReward").innerText =
+"All rewards unlocked 🍛"
+}
+
+document.getElementById("bar").style.width =
+(points/600*100)+"%"
+
+// celebration
+if(points>=150&&lastReward<150){celebrate("🎉 Bhaji Unlocked!");lastReward=150}
+if(points>=300&&lastReward<300){celebrate("🎉 Sag Aloo Unlocked!");lastReward=300}
+if(points>=450&&lastReward<450){celebrate("🎉 Rice Unlocked!");lastReward=450}
+if(points>=600&&lastReward<600){celebrate("🎉 Bhuna Unlocked!");lastReward=600}
+
+localStorage.setItem("lastReward",lastReward)
+}
+
+function celebrate(msg){
+let el=document.getElementById("celebration")
+el.innerText=msg
+el.style.display="block"
 }
 
 function save(){
