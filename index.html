@@ -2,134 +2,115 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhuna Challenge – GCSE English 🍛</title>
+<title>Bhuna Challenge – GCSE English</title>
 
 <style>
 body{
 margin:0;
-background:radial-gradient(circle at top,#1a1a1a,#0a0a0a 70%);
-color:#f5f5f5;
+background:#0f172a;
+color:#e5e7eb;
 font-family:-apple-system,system-ui;
 text-align:center;
 padding:20px;
 }
 
 h1{
-color:#ff2e2e;
+color:#cbd5f5;
 font-size:22px;
-letter-spacing:0.5px;
 margin-bottom:10px;
+font-weight:600;
 }
 
 .card{
-background:rgba(255,255,255,0.04);
-backdrop-filter:blur(8px);
+background:#1e293b;
 padding:18px;
-border-radius:18px;
+border-radius:14px;
 margin-top:15px;
-box-shadow:0 8px 25px rgba(0,0,0,0.6);
-border:1px solid rgba(255,255,255,0.05);
+box-shadow:0 4px 12px rgba(0,0,0,0.4);
 }
 
 button{
-background:linear-gradient(135deg,#ff2e2e,#c40000);
+background:#334155;
 color:white;
 border:none;
 padding:14px;
-border-radius:14px;
+border-radius:10px;
 margin:6px;
 width:90%;
 font-weight:600;
 font-size:15px;
-box-shadow:0 4px 12px rgba(255,0,0,0.3);
 }
 
 button:active{
-transform:scale(0.96);
+transform:scale(0.97);
 }
 
 textarea{
 width:92%;
 height:110px;
-border-radius:14px;
+border-radius:10px;
 padding:12px;
-background:#f5f5f5;
+background:#f1f5f9;
 font-size:15px;
 }
 
 .progress{
-background:#2a2a2a;
-height:14px;
-border-radius:10px;
+background:#334155;
+height:12px;
+border-radius:8px;
 margin-top:12px;
 overflow:hidden;
 }
 
 .bar{
-background:linear-gradient(90deg,#ff2e2e,#00d4ff);
-height:14px;
+background:#60a5fa;
+height:12px;
 width:0%;
-transition:0.5s;
+transition:0.4s;
 }
 
-.small{font-size:13px;color:#bbb;}
+.small{font-size:13px;color:#94a3b8;}
 
 .reward{
 text-align:left;
-padding:8px 0;
+padding:6px 0;
 font-size:14px;
 display:flex;
 justify-content:space-between;
 }
 
-.locked{opacity:0.35;}
-.unlocked{
-color:#00ffae;
-text-shadow:0 0 6px rgba(0,255,174,0.6);
-}
+.locked{opacity:0.4;}
+.unlocked{color:#4ade80;}
 
 #feedback{
 margin-top:10px;
 font-weight:600;
 }
 
-.correct{
-color:#00ffae;
-text-shadow:0 0 6px rgba(0,255,174,0.5);
-}
-
-.wrong{
-color:#ff4d4d;
-}
+.correct{color:#4ade80;}
+.wrong{color:#f87171;}
 
 #celebration{
 display:none;
-font-size:20px;
+font-size:18px;
 margin-top:10px;
-color:#00ffae;
-animation:pop 0.5s ease;
-text-shadow:0 0 10px rgba(0,255,174,0.8);
-}
-
-@keyframes pop{
-0%{transform:scale(0.7);opacity:0;}
-100%{transform:scale(1);opacity:1;}
+color:#4ade80;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔥 Bhuna Challenge – GCSE English</h1>
+<h1>Bhuna Challenge – GCSE English</h1>
 
 <div class="card">
 <p><b>Points:</b> <span id="points"></span></p>
-<p>🔥 Streak: <span id="streak"></span></p>
+<p>Streak: <span id="streak"></span></p>
 
 <p id="focus"></p>
 <p id="summary" class="small"></p>
 
-<h3>🍛 Rewards</h3>
+<h3>Rewards</h3>
 <div id="rewardList"></div>
 <p id="nextReward"></p>
 
@@ -160,7 +141,7 @@ text-shadow:0 0 10px rgba(0,255,174,0.8);
 </div>
 
 <div class="card" id="bossSection" style="display:none">
-<p><b>🏆 Bhuna Boss Challenge</b></p>
+<p><b>Bhuna Boss Challenge</b></p>
 <p id="bossExtract"></p>
 <textarea id="bossAnswer"></textarea>
 <button onclick="submitBoss()">Submit</button>
@@ -178,7 +159,6 @@ let total=+localStorage.getItem("total")||0
 let difficulty=+localStorage.getItem("difficulty")||1
 let lastReward=+localStorage.getItem("lastReward")||0
 
-// streak logic
 let today=new Date().toDateString()
 let lastDate=localStorage.getItem("lastDate")
 if(lastDate){
@@ -188,7 +168,6 @@ else if(diff>1)streak=1
 }else streak=1
 localStorage.setItem("lastDate",today)
 
-// question banks
 const easy=[
 ["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1],
 ["He ran quickly","What is this?",["Verb","Noun","Adjective"],0]
@@ -230,7 +209,7 @@ document.getElementById("summary").innerText=
 "Accuracy: "+acc+"% | Sessions: "+sessions
 
 document.getElementById("focus").innerText=
-acc<60?"🎯 Focus: Explain effects clearly":""
+acc<60?"Focus: Explain effects clearly":""
 
 updateRewards()
 
@@ -265,10 +244,10 @@ points+=10
 correct++
 step++
 f.className="correct"
-f.innerText="✔ Correct"
+f.innerText="Correct"
 }else{
 f.className="wrong"
-f.innerText="✖ Think about the effect"
+f.innerText="Try again – focus on effect"
 }
 
 adjustDifficulty()
@@ -293,9 +272,9 @@ function submitExam(){
 let txt=document.getElementById("answer").value.toLowerCase()
 if(txt.includes("writer")&&txt.includes("suggest")){
 points+=40
-document.getElementById("modelAnswer").innerText="✔ Strong answer"
+document.getElementById("modelAnswer").innerText="Strong answer"
 }else{
-document.getElementById("modelAnswer").innerText="✖ Use 'This suggests...'"
+document.getElementById("modelAnswer").innerText="Add: This suggests..."
 }
 step=4
 save()
@@ -350,7 +329,7 @@ let html=""
 rewards.forEach(r=>{
 let unlocked = points >= r.pts
 html += `<div class="reward ${unlocked?'unlocked':'locked'}">
-<span>${unlocked?'🟢':'🔒'} ${r.name}</span>
+<span>${unlocked?'✓':'○'} ${r.name}</span>
 <span>${r.pts}</span>
 </div>`
 })
@@ -365,16 +344,16 @@ document.getElementById("nextReward").innerText =
 "Next: "+next.name+" — "+remaining+" points to go"
 }else{
 document.getElementById("nextReward").innerText =
-"All rewards unlocked 🍛"
+"All rewards unlocked"
 }
 
 document.getElementById("bar").style.width =
 (points/600*100)+"%"
 
-if(points>=150&&lastReward<150){celebrate("🎉 Bhaji Unlocked!");lastReward=150}
-if(points>=300&&lastReward<300){celebrate("🎉 Sag Aloo Unlocked!");lastReward=300}
-if(points>=450&&lastReward<450){celebrate("🎉 Rice Unlocked!");lastReward=450}
-if(points>=600&&lastReward<600){celebrate("🎉 Bhuna Unlocked!");lastReward=600}
+if(points>=150&&lastReward<150){celebrate("Bhaji unlocked");lastReward=150}
+if(points>=300&&lastReward<300){celebrate("Sag Aloo unlocked");lastReward=300}
+if(points>=450&&lastReward<450){celebrate("Rice unlocked");lastReward=450}
+if(points>=600&&lastReward<600){celebrate("Bhuna unlocked");lastReward=600}
 
 localStorage.setItem("lastReward",lastReward)
 }
