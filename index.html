@@ -30,10 +30,7 @@ padding:14px;
 border-radius:10px;
 margin:6px;
 width:90%;
-transition:0.2s;
 }
-
-button:disabled{opacity:0.7}
 
 textarea{
 width:92%;
@@ -46,21 +43,12 @@ border:1px solid #ccc;
 .locked{opacity:0.4}
 .unlocked{color:#059669;font-weight:bold}
 
+.good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
+.model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
+.improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
+
 .progress{height:10px;background:#e5e7eb;border-radius:8px}
 .bar{height:10px;background:#2563eb;width:0%}
-
-#popup{
-position:fixed;
-top:30%;
-left:50%;
-transform:translate(-50%,-50%);
-background:white;
-padding:20px;
-border-radius:12px;
-display:none;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-font-size:18px;
-}
 </style>
 </head>
 
@@ -75,44 +63,31 @@ font-size:18px;
 <p id="modeDisplay"></p>
 </div>
 
-<div id="popup"></div>
-
 <div class="card">
 <p>Points: <b id="points"></b></p>
-<p>Streak: <b id="streak"></b></p>
-
 <h3>Rewards</h3>
 <div id="rewards"></div>
 <p id="next"></p>
-
 <div class="progress"><div class="bar" id="bar"></div></div>
 </div>
 
 <div class="card" id="mc"></div>
 <div class="card" id="exam" style="display:none"></div>
-<div class="card" id="improve" style="display:none"></div>
+<div class="card" id="improve"></div>
 
 <script>
 
 // MODE
 let mode=localStorage.getItem("mode")||"4"
-
-function setMode(m){
-mode=m
-localStorage.setItem("mode",m)
-location.reload()
-}
-
+function setMode(m){mode=m;localStorage.setItem("mode",m);location.reload()}
 document.getElementById("modeDisplay").innerText=
-mode==="6" ? "Grade 6 Mode 🔥" : "Grade 4 Mode"
+mode==="6"?"Grade 6 Mode 🔥":"Grade 4 Mode"
 
 // STATE
 let points=+localStorage.getItem("points")||0
 let step=+localStorage.getItem("step")||0
 let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
-
 document.getElementById("points").innerText=points
-document.getElementById("streak").innerText=1
 
 // REWARDS
 const rewards=[
@@ -122,214 +97,127 @@ const rewards=[
 {name:"Chicken Bhuna",pts:480}
 ]
 
-function popup(text){
-let p=document.getElementById("popup")
-p.innerText=text
-p.style.display="block"
-setTimeout(()=>p.style.display="none",2000)
-}
-
 function loadRewards(){
-
 let html=""
-let newItem=null
-
 rewards.forEach(r=>{
 let u=points>=r.pts
-
-if(u && !unlocked.includes(r.name)){
-unlocked.push(r.name)
-newItem=r.name
-}
-
+if(u && !unlocked.includes(r.name)) unlocked.push(r.name)
 html+=`<div class="${u?'unlocked':'locked'}">${r.name} – ${r.pts}</div>`
 })
-
 localStorage.setItem("unlocked",JSON.stringify(unlocked))
-
 document.getElementById("rewards").innerHTML=html
 
 let next=rewards.find(r=>points<r.pts)
-
-if(next){
 document.getElementById("next").innerText=
-"Next: "+next.name+" ("+(next.pts-points)+" pts)"
-}else{
-document.getElementById("next").innerText="All rewards unlocked"
-}
+next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"All rewards unlocked"
 
 document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
-
-if(newItem) popup("🎉 "+newItem+" unlocked!")
 }
 
 // QUESTIONS
 const questions=[
-
-["The crowd roared","Which technique?",["Verb","Metaphor","Fact"],0],
-
 ["The word 'surged' suggests...","Best answer?",["Power and speed","Calm movement","Weakness"],0],
 ["The phrase 'wave of sound' suggests...","Best answer?",["Overwhelming noise","Quiet","Confusion"],0],
-["The verb 'exploded' implies...","Best answer?",["Sudden intensity","Slow build","Stillness"],0],
-["The word 'shadow' suggests...","Best answer?",["Stealth and danger","Warmth","Noise"],0]
-
+["The verb 'exploded' implies...","Best answer?",["Sudden intensity","Slow build","Stillness"],0]
 ]
 
 // EXTRACTS
 const extracts=[
 {
 text:`The crowd roared as Frimpong surged forward. The sound crashed across the stadium.`,
-q:"How does the writer describe the atmosphere? (8 marks)"
-},
-{
-text:`Wirtz moved like a shadow, silent and quick.`,
-q:"How is movement presented? (8 marks)"
+q:"How does the writer describe the atmosphere? (8 marks)",
+model:`The verb "surged" suggests powerful, unstoppable movement, reflecting intensity. The metaphor "crashed across the stadium" implies overwhelming noise, creating a dramatic atmosphere.`
 }
 ]
 
-const weak="The writer uses words to show excitement."
+let currentModel=""
 
 // FLOW
 function load(){
 loadRewards()
-
 if(step<3) loadMC()
-else if(step==3) loadExam()
-else loadImprove()
+else loadExam()
 }
 
 // MC
 function loadMC(){
-
 let q=questions[Math.floor(Math.random()*questions.length)]
-
 let html="<p>"+q[0]+" — "+q[1]+"</p>"
-
 q[2].forEach((a,i)=>{
-html+=`<button id="btn${i}" onclick="ans(${i},${q[3]})">${a}</button>`
+html+=`<button onclick="ans(${i},${q[3]})">${a}</button>`
 })
-
 document.getElementById("mc").innerHTML=html
 }
 
 function ans(i,c){
-
-let buttons=document.querySelectorAll("#mc button")
-buttons.forEach(b=>b.disabled=true)
-
-document.getElementById("btn"+c).style.background="#059669"
-
-if(i!=c){
-document.getElementById("btn"+i).style.background="#dc2626"
-}
-
-let feedback=""
-
-if(i==c){
-points+=10
-step++
-feedback="✅ Correct – +10 points"
-}else{
-feedback="❌ Not quite – correct answer highlighted"
-}
-
-document.getElementById("mc").innerHTML += `<p><b>${feedback}</b></p>`
-
-save()
-
-setTimeout(()=>location.reload(),1200)
+if(i==c){points+=10;step++;save()}
+location.reload()
 }
 
 // EXAM
 function loadExam(){
-
 let e=extracts[Math.floor(Math.random()*extracts.length)]
+currentModel=e.model
 
 document.getElementById("mc").style.display="none"
-
 document.getElementById("exam").style.display="block"
+
 document.getElementById("exam").innerHTML=`
 <p>${e.text}</p>
 <p><b>${e.q}</b></p>
 <textarea id="ansBox"></textarea>
 <button onclick="mark()">Submit</button>
-<p id="fb"></p>
+<div id="fb"></div>
 `
 }
 
-// MARKING
+// SMART MARKING
 function mark(){
 
-let t=document.getElementById("ansBox").value.toLowerCase()
+let raw=document.getElementById("ansBox").value
+let t=raw.toLowerCase()
 
-let score=0
 let feedback=[]
 
-if(t.includes("'")||t.includes('"')) score++
-else feedback.push("Add a quote")
+// detection
+let hasQuote = t.includes("'")||t.includes('"')
+let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")
+let hasEffect = t.includes("suggest")||t.includes("shows")||t.includes("implies")
+let hasZoom = t.includes("word")||t.includes("verb")||t.includes("phrase")
 
-if(t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")) score++
-else feedback.push("Name the technique")
+// feedback logic
+if(!hasQuote) feedback.push("👉 Add a short quote from the text")
+if(!hasTechnique) feedback.push("👉 Name the language technique")
+if(!hasEffect) feedback.push("👉 Explain what it suggests")
+if(mode==="6" && !hasZoom) feedback.push("👉 Zoom in on a key word")
 
-if(t.includes("suggest")||t.includes("shows")||t.includes("implies")) score++
-else feedback.push("Explain the effect")
+// scoring
+let score = [hasQuote,hasTechnique,hasEffect,(mode==="6"?hasZoom:true)].filter(Boolean).length
 
-if(mode==="6"){
-if(t.includes("word")||t.includes("verb")||t.includes("phrase")){
-score++
-}else{
-feedback.push("Zoom in on a specific word")
-}
-}
-
-let msg=""
-
+let level=""
 if(mode==="4"){
-if(score==1) msg="Level 1 (1–2)"
-if(score==2){ msg="Level 2 (3–5)"; points+=20 }
-if(score>=3){ msg="Level 3 (6–8)"; points+=35 }
+if(score<=1) level="Level 1"
+if(score==2){level="Level 2";points+=20}
+if(score>=3){level="Level 3";points+=35}
 }else{
-if(score<=2) msg="Below Grade 6"
-if(score==3){ msg="Approaching Grade 6"; points+=25 }
-if(score>=4){ msg="Grade 6+ 🔥"; points+=45 }
+if(score<=2) level="Below Grade 6"
+if(score==3){level="Nearly Grade 6";points+=25}
+if(score>=4){level="Grade 6+ 🔥";points+=45}
 }
 
-document.getElementById("fb").innerText =
-msg + "\n\n" +
-(score>=3
-? "Clear, developed explanation."
-: "To improve:\n"+feedback.join("\n"))
+// output
+document.getElementById("fb").innerHTML=
+`<p><b>${level}</b></p>
 
-step++
-save()
-}
+<div class="good"><b>Your answer:</b><br>${raw}</div>
 
-// IMPROVE
-function loadImprove(){
+<div class="improve"><b>How to improve:</b><br>${feedback.join("<br>")||"Strong answer — well done"}</div>
 
-document.getElementById("exam").style.display="none"
-document.getElementById("improve").style.display="block"
-
-document.getElementById("improve").innerHTML=`
-<p><b>Improve this answer:</b></p>
-<p>${weak}</p>
-<textarea></textarea>
-<button onclick="done()">Submit</button>
-<p id="impFb"></p>
+<div class="model"><b>Grade 6 model:</b><br>${currentModel}</div>
 `
-}
-
-function done(){
-
-points+=15
-
-document.getElementById("impFb").innerText=
-"Better — include quote + technique + word-level analysis."
 
 step=0
 save()
-
-setTimeout(()=>location.reload(),1000)
 }
 
 // SAVE
