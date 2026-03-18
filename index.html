@@ -84,9 +84,15 @@ border-radius:10px;
 <p><b>Question:</b></p>
 <p>How does the writer use language to create an effect?</p>
 
-<textarea id="answer" placeholder="The writer uses... This suggests... This makes the reader feel..."></textarea>
+<textarea id="answer"></textarea>
 <br>
 <button onclick="submitExam()">Submit Answer</button>
+</div>
+
+<div class="card" id="complete" style="display:none">
+<h2>✅ Session Complete</h2>
+<p>Great work — points added!</p>
+<button onclick="restart()">Start Next Session</button>
 </div>
 
 <script>
@@ -94,73 +100,75 @@ border-radius:10px;
 let points = parseInt(localStorage.getItem("points")) || 0
 let step = parseInt(localStorage.getItem("step")) || 0
 let streak = parseInt(localStorage.getItem("streak")) || 0
+let used = JSON.parse(localStorage.getItem("usedQs")) || []
 let lastDate = localStorage.getItem("lastDate")
 
 const today = new Date().toDateString()
 
 if(lastDate){
 let diff = (new Date(today) - new Date(lastDate)) / (1000*60*60*24)
-if(diff === 1){
-streak++
-}else if(diff > 1){
-streak = 1
-}
-}else{
-streak = 1
-}
+if(diff === 1){streak++}
+else if(diff > 1){streak = 1}
+}else{streak = 1}
 
 localStorage.setItem("lastDate", today)
 
 const mcQuestions = [
-["The crowd roared as Frimpong scored","Which technique is used?",["Metaphor","Personification","Simile"],1],
-["Wirtz glided past defenders","What does 'glided' suggest?",["Power","Ease","Fear"],1],
-["The ball flew like a rocket","What technique is this?",["Simile","Fact","Alliteration"],0],
-["The rain hammered the pitch","What does 'hammered' suggest?",["Softness","Violence","Calm"],1],
-["Fans exploded with joy","Which word is most powerful?",["fans","exploded","joy"],1],
-["He crept through the defence","What does 'crept' suggest?",["Speed","Stealth","Strength"],1],
-["The stadium was a fortress","What technique?",["Metaphor","Simile","Fact"],0],
-["The wind screamed through the stands","Technique?",["Personification","Fact","List"],0],
-["The defender was a wall","Technique?",["Metaphor","Simile","Fact"],0],
-["The striker pounced on the ball","What does 'pounced' suggest?",["Aggression","Fear","Calm"],0],
-["The fans buzzed with excitement","Technique?",["Personification","Fact","Command"],0],
-["The shot rocketed into the net","What does 'rocketed' show?",["Speed","Fear","Silence"],0]
+["The crowd roared as Frimpong scored","Which technique?",["Metaphor","Personification","Simile"],1],
+["Wirtz glided past defenders","What does 'glided' suggest?",["Ease","Fear","Pain"],0],
+["The ball flew like a rocket","Technique?",["Simile","Fact","List"],0],
+["Rain hammered the pitch","What does this suggest?",["Violence","Calm","Soft"],0],
+["Fans exploded with joy","Strongest word?",["fans","exploded","joy"],1],
+["He crept through defenders","Meaning?",["Stealth","Speed","Power"],0],
+["The stadium was a fortress","Technique?",["Metaphor","Simile","Fact"],0],
+["Wind screamed through stands","Technique?",["Personification","Fact","Command"],0],
+["Defender was a wall","Technique?",["Metaphor","Simile","Fact"],0],
+["Shot rocketed into net","Suggests?",["Speed","Fear","Silence"],0],
+["Fans buzzed with excitement","Technique?",["Personification","Fact","List"],0],
+["He smashed the ball","Suggests?",["Power","Calm","Fear"],0],
+["The silence was deafening","Technique?",["Oxymoron","Fact","Simile"],0],
+["The pitch was a swamp","Technique?",["Metaphor","Fact","Command"],0],
+["He darted forward","Suggests?",["Speed","Fear","Pain"],0]
 ]
 
 const extracts = [
-"The stadium roared as Frimpong fired the ball into the net, the noise crashing around him like a wave.",
-"The wind howled through the empty streets, tearing at anything in its path.",
+"The stadium roared as Frimpong fired the ball into the net, the noise crashing like a wave.",
+"The wind howled through empty streets, tearing at anything in its path.",
 "The corridor stretched endlessly ahead, silent and suffocating.",
-"Fans erupted as Wirtz curled the ball into the top corner, sparking chaos in the stands."
+"Fans erupted as Wirtz curled the ball into the top corner."
 ]
 
 function load(){
-
 document.getElementById("points").innerText = points
 document.getElementById("streak").innerText = streak
-
 updateRewards()
 
 if(step < 3){
 loadMC()
+}else if(step === 3){
+showExam()
 }else{
-document.getElementById("mcSection").style.display = "none"
-document.getElementById("examSection").style.display = "block"
-
-document.getElementById("extract").innerText =
-extracts[Math.floor(Math.random()*extracts.length)]
+showComplete()
 }
-
 }
 
 function loadMC(){
 
-let qIndex = Math.floor(Math.random()*mcQuestions.length)
-let q = mcQuestions[qIndex]
+if(used.length === mcQuestions.length){
+used = []
+}
+
+let available = mcQuestions.filter((q,i)=>!used.includes(i))
+let index = Math.floor(Math.random()*available.length)
+let q = available[index]
+let realIndex = mcQuestions.indexOf(q)
+
+used.push(realIndex)
+localStorage.setItem("usedQs", JSON.stringify(used))
 
 document.getElementById("mcQ").innerText = q[0] + " — " + q[1]
 
-let html = ""
-
+let html=""
 q[2].forEach((a,i)=>{
 html += `<button onclick="answer(${i},${q[3]})">${a}</button>`
 })
@@ -169,64 +177,75 @@ document.getElementById("mcAnswers").innerHTML = html
 }
 
 function answer(i,c){
-
-if(i === c){
-points += 10
+if(i===c){
+points+=10
 step++
 alert("Correct 👍")
 }else{
-alert("Not quite — think about the effect")
+alert("Think about the effect")
 }
-
 save()
 location.reload()
+}
 
+function showExam(){
+document.getElementById("mcSection").style.display="none"
+document.getElementById("examSection").style.display="block"
+document.getElementById("extract").innerText =
+extracts[Math.floor(Math.random()*extracts.length)]
 }
 
 function submitExam(){
-
-let txt = document.getElementById("answer").value.toLowerCase()
+let txt=document.getElementById("answer").value.toLowerCase()
 
 if(txt.includes("writer") && txt.includes("suggest")){
-points += 40
-alert("Good GCSE paragraph 👍")
+points+=40
+alert("Good answer 👍")
 }else{
-alert("Use: The writer uses... This suggests... This makes the reader feel...")
+alert("Use: The writer uses... This suggests...")
 }
 
-step = 0
+step=4
 save()
 location.reload()
+}
 
+function showComplete(){
+document.getElementById("mcSection").style.display="none"
+document.getElementById("examSection").style.display="none"
+document.getElementById("complete").style.display="block"
+}
+
+function restart(){
+step=0
+save()
+location.reload()
 }
 
 function updateRewards(){
-
-let rewards = [
+let rewards=[
 ["Onion Bhaji",150],
 ["Sag Aloo",300],
 ["Rice",450],
 ["Chicken Bhuna",600]
 ]
 
-let unlocked = rewards.filter(r => points >= r[1])
-let next = rewards.find(r => points < r[1])
+let unlocked=rewards.filter(r=>points>=r[1])
+let next=rewards.find(r=>points<r[1])
 
-document.getElementById("unlocked").innerText =
-"Unlocked: " + (unlocked.length ? unlocked.map(r=>r[0]).join(", ") : "None")
+document.getElementById("unlocked").innerText=
+"Unlocked: "+(unlocked.length?unlocked.map(r=>r[0]).join(", "):"None")
 
-document.getElementById("nextReward").innerText =
-next ? "Next: " + next[0] + " (" + next[1] + ")" : "All rewards unlocked 🍛"
+document.getElementById("nextReward").innerText=
+next?"Next: "+next[0]+" ("+next[1]+")":"All rewards unlocked 🍛"
 
-document.getElementById("bar").style.width =
-(points/600*100) + "%"
-
+document.getElementById("bar").style.width=(points/600*100)+"%"
 }
 
 function save(){
-localStorage.setItem("points", points)
-localStorage.setItem("step", step)
-localStorage.setItem("streak", streak)
+localStorage.setItem("points",points)
+localStorage.setItem("step",step)
+localStorage.setItem("streak",streak)
 }
 
 load()
