@@ -1,103 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bhuna Challenge – GCSE English</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bhuna Challenge – GCSE English 🍛</title>
 
 <style>
-body {
-    background: #0b0b0b;
-    color: white;
-    font-family: -apple-system, Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
+body{
+background:#0b0b0b;
+color:white;
+font-family:-apple-system, Arial;
+text-align:center;
+padding:20px;
 }
 
-h1 {
-    font-size: 28px;
+h1{color:#c8102e;}
+
+.card{
+background:#1a1a1a;
+padding:16px;
+border-radius:12px;
+margin-top:15px;
 }
 
-.card {
-    background: #1a1a1a;
-    padding: 20px;
-    border-radius: 12px;
-    margin: 20px auto;
-    max-width: 500px;
+button{
+background:#c8102e;
+color:white;
+border:none;
+padding:12px;
+border-radius:10px;
+margin:5px;
+width:85%;
+max-width:340px;
 }
 
-button {
-    background: #ff6600;
-    border: none;
-    padding: 12px 20px;
-    color: white;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
+textarea{
+width:90%;
+height:120px;
+border-radius:10px;
+padding:10px;
+color:black;
 }
 
-button:hover {
-    background: #ff8533;
+.progress{
+background:#333;
+height:16px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.bar{
+background:#c8102e;
+height:16px;
+width:0%;
+border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔥 Bhuna Challenge</h1>
+<h1>🔥 Bhuna Challenge – GCSE English</h1>
 
 <div class="card">
-    <h2 id="question">Loading question...</h2>
-    <button onclick="showAnswer()">Show Answer</button>
-    <p id="answer" style="display:none;"></p>
+<p><b>Points:</b> <span id="points"></span></p>
+<p><b>🔥 Streak:</b> <span id="streak"></span> days</p>
+<p id="nextReward"></p>
+<p id="unlocked"></p>
+
+<div class="progress">
+<div id="bar" class="bar"></div>
+</div>
+</div>
+
+<div class="card" id="mcSection">
+<p id="mcQ"></p>
+<div id="mcAnswers"></div>
+</div>
+
+<div class="card" id="examSection" style="display:none">
+<p><b>Extract:</b></p>
+<p id="extract"></p>
+
+<p><b>Question:</b></p>
+<p>How does the writer use language to create an effect?</p>
+
+<textarea id="answer" placeholder="The writer uses... This suggests... This makes the reader feel..."></textarea>
+<br>
+<button onclick="submitExam()">Submit Answer</button>
 </div>
 
 <script>
-const questions = [
-    {
-        q: "What is a metaphor?",
-        a: "A comparison saying something IS something else."
-    },
-    {
-        q: "What is a simile?",
-        a: "A comparison using 'like' or 'as'."
-    },
-    {
-        q: "What is alliteration?",
-        a: "Repeating the same starting sound in words."
-    },
-    {
-        q: "What is personification?",
-        a: "Giving human qualities to non-human things."
-    },
-    {
-        q: "What is a noun?",
-        a: "A naming word (person, place, thing)."
-    },
-    {
-        q: "What is a verb?",
-        a: "A doing or action word."
-    },
-    {
-        q: "What is an adjective?",
-        a: "A describing word."
-    }
-];
 
-function getQuestionOfDay() {
-    const today = new Date().getDay(); // 0–6
-    return questions[today % questions.length];
+let points = parseInt(localStorage.getItem("points")) || 0
+let step = parseInt(localStorage.getItem("step")) || 0
+let streak = parseInt(localStorage.getItem("streak")) || 0
+let lastDate = localStorage.getItem("lastDate")
+
+const today = new Date().toDateString()
+
+if(lastDate){
+let diff = (new Date(today) - new Date(lastDate)) / (1000*60*60*24)
+if(diff === 1){
+streak++
+}else if(diff > 1){
+streak = 1
+}
+}else{
+streak = 1
 }
 
-const todayQ = getQuestionOfDay();
+localStorage.setItem("lastDate", today)
 
-document.getElementById("question").innerText = todayQ.q;
+const mcQuestions = [
+["The crowd roared as Frimpong scored","Which technique is used?",["Metaphor","Personification","Simile"],1],
+["Wirtz glided past defenders","What does 'glided' suggest?",["Power","Ease","Fear"],1],
+["The ball flew like a rocket","What technique is this?",["Simile","Fact","Alliteration"],0],
+["The rain hammered the pitch","What does 'hammered' suggest?",["Softness","Violence","Calm"],1],
+["Fans exploded with joy","Which word is most powerful?",["fans","exploded","joy"],1],
+["He crept through the defence","What does 'crept' suggest?",["Speed","Stealth","Strength"],1],
+["The stadium was a fortress","What technique?",["Metaphor","Simile","Fact"],0],
+["The wind screamed through the stands","Technique?",["Personification","Fact","List"],0],
+["The defender was a wall","Technique?",["Metaphor","Simile","Fact"],0],
+["The striker pounced on the ball","What does 'pounced' suggest?",["Aggression","Fear","Calm"],0],
+["The fans buzzed with excitement","Technique?",["Personification","Fact","Command"],0],
+["The shot rocketed into the net","What does 'rocketed' show?",["Speed","Fear","Silence"],0]
+]
 
-function showAnswer() {
-    const answerEl = document.getElementById("answer");
-    answerEl.innerText = todayQ.a;
-    answerEl.style.display = "block";
+const extracts = [
+"The stadium roared as Frimpong fired the ball into the net, the noise crashing around him like a wave.",
+"The wind howled through the empty streets, tearing at anything in its path.",
+"The corridor stretched endlessly ahead, silent and suffocating.",
+"Fans erupted as Wirtz curled the ball into the top corner, sparking chaos in the stands."
+]
+
+function load(){
+
+document.getElementById("points").innerText = points
+document.getElementById("streak").innerText = streak
+
+updateRewards()
+
+if(step < 3){
+loadMC()
+}else{
+document.getElementById("mcSection").style.display = "none"
+document.getElementById("examSection").style.display = "block"
+
+document.getElementById("extract").innerText =
+extracts[Math.floor(Math.random()*extracts.length)]
 }
+
+}
+
+function loadMC(){
+
+let qIndex = Math.floor(Math.random()*mcQuestions.length)
+let q = mcQuestions[qIndex]
+
+document.getElementById("mcQ").innerText = q[0] + " — " + q[1]
+
+let html = ""
+
+q[2].forEach((a,i)=>{
+html += `<button onclick="answer(${i},${q[3]})">${a}</button>`
+})
+
+document.getElementById("mcAnswers").innerHTML = html
+}
+
+function answer(i,c){
+
+if(i === c){
+points += 10
+step++
+alert("Correct 👍")
+}else{
+alert("Not quite — think about the effect")
+}
+
+save()
+location.reload()
+
+}
+
+function submitExam(){
+
+let txt = document.getElementById("answer").value.toLowerCase()
+
+if(txt.includes("writer") && txt.includes("suggest")){
+points += 40
+alert("Good GCSE paragraph 👍")
+}else{
+alert("Use: The writer uses... This suggests... This makes the reader feel...")
+}
+
+step = 0
+save()
+location.reload()
+
+}
+
+function updateRewards(){
+
+let rewards = [
+["Onion Bhaji",150],
+["Sag Aloo",300],
+["Rice",450],
+["Chicken Bhuna",600]
+]
+
+let unlocked = rewards.filter(r => points >= r[1])
+let next = rewards.find(r => points < r[1])
+
+document.getElementById("unlocked").innerText =
+"Unlocked: " + (unlocked.length ? unlocked.map(r=>r[0]).join(", ") : "None")
+
+document.getElementById("nextReward").innerText =
+next ? "Next: " + next[0] + " (" + next[1] + ")" : "All rewards unlocked 🍛"
+
+document.getElementById("bar").style.width =
+(points/600*100) + "%"
+
+}
+
+function save(){
+localStorage.setItem("points", points)
+localStorage.setItem("step", step)
+localStorage.setItem("streak", streak)
+}
+
+load()
+
 </script>
 
 </body>
