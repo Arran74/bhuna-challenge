@@ -54,6 +54,24 @@ height:16px;
 width:0%;
 border-radius:10px;
 }
+
+#feedback{
+margin-top:10px;
+font-weight:bold;
+}
+
+#celebration{
+display:none;
+font-size:22px;
+margin-top:15px;
+color:#00ffcc;
+animation: pop 0.6s ease;
+}
+
+@keyframes pop{
+0%{transform:scale(0.5);opacity:0;}
+100%{transform:scale(1);opacity:1;}
+}
 </style>
 </head>
 
@@ -63,18 +81,21 @@ border-radius:10px;
 
 <div class="card">
 <p><b>Points:</b> <span id="points"></span></p>
-<p><b>🔥 Streak:</b> <span id="streak"></span> days</p>
+<p><b>🔥 Streak:</b> <span id="streak"></span></p>
 <p id="nextReward"></p>
 <p id="unlocked"></p>
 
 <div class="progress">
 <div id="bar" class="bar"></div>
 </div>
+
+<div id="celebration"></div>
 </div>
 
 <div class="card" id="mcSection">
 <p id="mcQ"></p>
 <div id="mcAnswers"></div>
+<p id="feedback"></p>
 </div>
 
 <div class="card" id="examSection" style="display:none">
@@ -85,14 +106,14 @@ border-radius:10px;
 <p>How does the writer use language to create an effect?</p>
 
 <textarea id="answer"></textarea>
-<br>
 <button onclick="submitExam()">Submit Answer</button>
+
+<p id="modelAnswer" style="margin-top:10px;"></p>
 </div>
 
 <div class="card" id="complete" style="display:none">
 <h2>✅ Session Complete</h2>
-<p>Great work — points added!</p>
-<button onclick="restart()">Start Next Session</button>
+<button onclick="restart()">Next Session</button>
 </div>
 
 <script>
@@ -101,15 +122,17 @@ let points = parseInt(localStorage.getItem("points")) || 0
 let step = parseInt(localStorage.getItem("step")) || 0
 let streak = parseInt(localStorage.getItem("streak")) || 0
 let used = JSON.parse(localStorage.getItem("usedQs")) || []
+let lastReward = parseInt(localStorage.getItem("lastReward")) || 0
+
+// streak logic
+let today = new Date().toDateString()
 let lastDate = localStorage.getItem("lastDate")
 
-const today = new Date().toDateString()
-
 if(lastDate){
-let diff = (new Date(today) - new Date(lastDate)) / (1000*60*60*24)
-if(diff === 1){streak++}
-else if(diff > 1){streak = 1}
-}else{streak = 1}
+let diff = (new Date(today) - new Date(lastDate))/(1000*60*60*24)
+if(diff===1) streak++
+else if(diff>1) streak=1
+}else streak=1
 
 localStorage.setItem("lastDate", today)
 
@@ -117,24 +140,14 @@ const mcQuestions = [
 ["The crowd roared as Frimpong scored","Which technique?",["Metaphor","Personification","Simile"],1],
 ["Wirtz glided past defenders","What does 'glided' suggest?",["Ease","Fear","Pain"],0],
 ["The ball flew like a rocket","Technique?",["Simile","Fact","List"],0],
-["Rain hammered the pitch","What does this suggest?",["Violence","Calm","Soft"],0],
+["Rain hammered the pitch","Suggests?",["Violence","Calm","Soft"],0],
 ["Fans exploded with joy","Strongest word?",["fans","exploded","joy"],1],
-["He crept through defenders","Meaning?",["Stealth","Speed","Power"],0],
-["The stadium was a fortress","Technique?",["Metaphor","Simile","Fact"],0],
-["Wind screamed through stands","Technique?",["Personification","Fact","Command"],0],
-["Defender was a wall","Technique?",["Metaphor","Simile","Fact"],0],
-["Shot rocketed into net","Suggests?",["Speed","Fear","Silence"],0],
-["Fans buzzed with excitement","Technique?",["Personification","Fact","List"],0],
-["He smashed the ball","Suggests?",["Power","Calm","Fear"],0],
-["The silence was deafening","Technique?",["Oxymoron","Fact","Simile"],0],
-["The pitch was a swamp","Technique?",["Metaphor","Fact","Command"],0],
-["He darted forward","Suggests?",["Speed","Fear","Pain"],0]
+["He crept through defenders","Meaning?",["Stealth","Speed","Power"],0]
 ]
 
 const extracts = [
-"The stadium roared as Frimpong fired the ball into the net, the noise crashing like a wave.",
-"The wind howled through empty streets, tearing at anything in its path.",
-"The corridor stretched endlessly ahead, silent and suffocating.",
+"The stadium roared as Frimpong fired the ball into the net.",
+"The wind howled through empty streets.",
 "Fans erupted as Wirtz curled the ball into the top corner."
 ]
 
@@ -143,49 +156,40 @@ document.getElementById("points").innerText = points
 document.getElementById("streak").innerText = streak
 updateRewards()
 
-if(step < 3){
-loadMC()
-}else if(step === 3){
-showExam()
-}else{
-showComplete()
-}
+if(step<3) loadMC()
+else if(step===3) showExam()
+else showComplete()
 }
 
 function loadMC(){
-
-if(used.length === mcQuestions.length){
-used = []
-}
-
+if(used.length===mcQuestions.length) used=[]
 let available = mcQuestions.filter((q,i)=>!used.includes(i))
-let index = Math.floor(Math.random()*available.length)
-let q = available[index]
+let i = Math.floor(Math.random()*available.length)
+let q = available[i]
 let realIndex = mcQuestions.indexOf(q)
-
 used.push(realIndex)
 localStorage.setItem("usedQs", JSON.stringify(used))
 
-document.getElementById("mcQ").innerText = q[0] + " — " + q[1]
+document.getElementById("mcQ").innerText = q[0]+" — "+q[1]
 
 let html=""
-q[2].forEach((a,i)=>{
-html += `<button onclick="answer(${i},${q[3]})">${a}</button>`
+q[2].forEach((a,idx)=>{
+html += `<button onclick="answer(${idx},${q[3]})">${a}</button>`
 })
-
 document.getElementById("mcAnswers").innerHTML = html
 }
 
 function answer(i,c){
+let f = document.getElementById("feedback")
 if(i===c){
 points+=10
 step++
-alert("Correct 👍")
+f.innerText="✅ Correct"
 }else{
-alert("Think about the effect")
+f.innerText="❌ Think about the effect"
 }
 save()
-location.reload()
+setTimeout(()=>location.reload(),500)
 }
 
 function showExam(){
@@ -197,17 +201,18 @@ extracts[Math.floor(Math.random()*extracts.length)]
 
 function submitExam(){
 let txt=document.getElementById("answer").value.toLowerCase()
+let model = "The writer uses powerful language like 'roared' which suggests intensity. This makes the reader feel the excitement."
 
 if(txt.includes("writer") && txt.includes("suggest")){
 points+=40
-alert("Good answer 👍")
+document.getElementById("modelAnswer").innerText="✅ Good answer\n\nExample:\n"+model
 }else{
-alert("Use: The writer uses... This suggests...")
+document.getElementById("modelAnswer").innerText="❌ Improve it:\nUse 'The writer uses... This suggests...'\n\nExample:\n"+model
 }
 
 step=4
 save()
-location.reload()
+setTimeout(()=>location.reload(),1500)
 }
 
 function showComplete(){
@@ -223,23 +228,43 @@ location.reload()
 }
 
 function updateRewards(){
-let rewards=[
-["Onion Bhaji",150],
-["Sag Aloo",300],
-["Rice",450],
-["Chicken Bhuna",600]
-]
+let rewards=[150,300,450,600]
 
-let unlocked=rewards.filter(r=>points>=r[1])
-let next=rewards.find(r=>points<r[1])
+let next = rewards.find(r=>points<r)
 
-document.getElementById("unlocked").innerText=
-"Unlocked: "+(unlocked.length?unlocked.map(r=>r[0]).join(", "):"None")
+document.getElementById("nextReward").innerText =
+next ? "Next reward at "+next+" points" : "All rewards unlocked 🍛"
 
-document.getElementById("nextReward").innerText=
-next?"Next: "+next[0]+" ("+next[1]+")":"All rewards unlocked 🍛"
+document.getElementById("unlocked").innerText =
+"Unlocked rewards: "+rewards.filter(r=>points>=r).join(", ")
 
 document.getElementById("bar").style.width=(points/600*100)+"%"
+
+// explosion
+if(points>=150 && lastReward<150){
+celebrate("🍛 Onion Bhaji Unlocked!")
+lastReward=150
+}
+if(points>=300 && lastReward<300){
+celebrate("🍛 Sag Aloo Unlocked!")
+lastReward=300
+}
+if(points>=450 && lastReward<450){
+celebrate("🍛 Rice Unlocked!")
+lastReward=450
+}
+if(points>=600 && lastReward<600){
+celebrate("🍛 Chicken Bhuna Unlocked!")
+lastReward=600
+}
+
+localStorage.setItem("lastReward", lastReward)
+}
+
+function celebrate(msg){
+let el=document.getElementById("celebration")
+el.innerText=msg+" 💥"
+el.style.display="block"
 }
 
 function save(){
