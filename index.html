@@ -2,194 +2,326 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bhuna Challenge – GCSE English</title>
+<title>GCSE English – The Bhuna Challenge</title>
 
 <style>
-body{margin:0;background:#0f172a;color:#e5e7eb;font-family:-apple-system;text-align:center;padding:20px;}
-.card{background:#1e293b;padding:18px;border-radius:14px;margin-top:15px;}
-button{background:#334155;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
-textarea{width:92%;height:110px;border-radius:10px;padding:12px;}
-.progress{background:#334155;height:12px;border-radius:8px;}
-.bar{background:#60a5fa;height:12px;width:0%;}
-.small{font-size:13px;color:#94a3b8;}
+body{
+margin:0;
+background:#f3f4f6;
+font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+text-align:center;
+padding:20px;
+color:#1f2937;
+}
+
+h1{font-size:26px}
+
+.card{
+background:white;
+padding:18px;
+border-radius:12px;
+margin-top:15px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+button{
+background:#2563eb;
+border:none;
+color:white;
+padding:14px;
+border-radius:8px;
+margin:6px;
+width:90%;
+font-size:16px;
+}
+
+textarea{
+width:92%;
+height:110px;
+padding:10px;
+border-radius:8px;
+border:1px solid #d1d5db;
+}
+
+.reward{
+display:flex;
+justify-content:space-between;
+padding:6px 0;
+}
+
+.locked{opacity:0.4}
+.unlocked{color:#059669;font-weight:bold}
+
+.progress{
+height:10px;
+background:#e5e7eb;
+border-radius:8px;
+margin-top:10px;
+}
+
+.bar{
+height:10px;
+background:#2563eb;
+width:0%;
+border-radius:8px;
+}
+
+.small{font-size:13px;color:#6b7280}
+.correct{color:#059669}
+.wrong{color:#dc2626}
+
 </style>
 </head>
 
 <body>
 
-<h2>Bhuna Challenge – GCSE English</h2>
+<h1>GCSE English – The Bhuna Challenge</h1>
 
 <div class="card">
-<p>Points: <span id="points"></span></p>
-<p>Streak: <span id="streak"></span></p>
-<p id="summary" class="small"></p>
+<p>Points: <b id="points"></b></p>
+<p>Streak: <b id="streak"></b></p>
 
-<h3>Rewards</h3>
+<h3>Rewards Ladder</h3>
 <div id="rewardList"></div>
 <p id="nextReward"></p>
 
-<div class="progress"><div id="bar" class="bar"></div></div>
+<div class="progress"><div class="bar" id="progress"></div></div>
 </div>
 
 <div class="card" id="mcSection">
-<p id="mcQ"></p>
-<div id="mcAnswers"></div>
+<p id="question"></p>
+<div id="answers"></div>
+<p id="feedback"></p>
 </div>
 
 <div class="card" id="examSection" style="display:none">
-<p id="timer" style="font-weight:bold;"></p>
 <p id="extract"></p>
-<p><b>Question</b></p>
-<p id="questionText"></p>
-<p class="small">Write about language and its effect.</p>
-<textarea id="answer"></textarea>
-<button onclick="submitExam()">Submit</button>
-<p id="modelAnswer"></p>
+<p><b id="examQuestion"></b></p>
+
+<textarea id="examAnswer"></textarea>
+<button onclick="submitExam()">Submit Answer</button>
+
+<p id="examFeedback"></p>
+</div>
+
+<div class="card" id="improveSection" style="display:none">
+<p><b>Improve this answer:</b></p>
+<p id="weak"></p>
+
+<textarea id="improveBox"></textarea>
+<button onclick="submitImprove()">Submit Improvement</button>
+
+<p id="improveFeedback"></p>
 </div>
 
 <script>
 
 let points=+localStorage.getItem("points")||0
+let streak=+localStorage.getItem("streak")||1
 let step=+localStorage.getItem("step")||0
-let streak=+localStorage.getItem("streak")||0
-let sessions=+localStorage.getItem("sessions")||0
-let correct=+localStorage.getItem("correct")||0
-let total=+localStorage.getItem("total")||0
-let difficulty=+localStorage.getItem("difficulty")||1
 
-// streak
-let today=new Date().toDateString()
-let lastDate=localStorage.getItem("lastDate")
-if(lastDate){
-let diff=(new Date(today)-new Date(lastDate))/(1000*60*60*24)
-if(diff===1)streak++
-else if(diff>1)streak=1
-}else streak=1
-localStorage.setItem("lastDate",today)
-
-// extracts
-const extracts=[
-{
-text:`Lines 1–4
-
-The crowd roared as Frimpong charged forward. The stadium trembled with noise.`,
-focus:"How does the writer use language to describe the atmosphere?"
-},
-{
-text:`Lines 2–5
-
-Wirtz glided past defenders like a shadow. The crowd held its breath.`,
-focus:"How does the writer describe Wirtz’s movement?"
-}
-]
-
-// load
-function load(){
 document.getElementById("points").innerText=points
 document.getElementById("streak").innerText=streak
-if(step<3)loadMC()
-else showExam()
-}
 
-// MC
-function loadMC(){
-let q=["The crowd roared","Technique?",["Metaphor","Personification","Simile"],1]
-document.getElementById("mcQ").innerText=q[0]+" — "+q[1]
+const rewards=[
+{name:"Onion Bhaji",pts:120},
+{name:"Sag Aloo",pts:240},
+{name:"Rice",pts:360},
+{name:"Chicken Bhuna",pts:480}
+]
+
+function loadRewards(){
 
 let html=""
+
+rewards.forEach(r=>{
+let unlocked=points>=r.pts
+
+html+=`<div class="reward ${unlocked?"unlocked":"locked"}">
+<span>${r.name}</span>
+<span>${r.pts} pts</span>
+</div>`
+})
+
+document.getElementById("rewardList").innerHTML=html
+
+let next=rewards.find(r=>points<r.pts)
+
+if(next){
+document.getElementById("nextReward").innerText=
+"Next reward: "+next.name+" ("+(next.pts-points)+" pts to go)"
+}
+
+document.getElementById("progress").style.width=(points/480*100)+"%"
+}
+
+const questions=[
+
+["The crowd roared","Which language technique?",["Verb","Metaphor","Fact"],0],
+
+["The stadium exploded with noise","Technique?",["Metaphor","Simile","Adjective"],0],
+
+["He crept slowly","This suggests…",["Stealth","Anger","Joy"],0],
+
+["The silence filled the room","Effect?",["Tension","Humour","Happiness"],0],
+
+["The wind howled outside","Technique?",["Personification","Fact","Opinion"],0],
+
+["Her eyes burned with anger","Technique?",["Metaphor","Fact","Verb"],0],
+
+["The crowd held its breath","This shows…",["Suspense","Boredom","Calm"],0],
+
+["The lights flickered","Creates…",["Tension","Joy","Relaxation"],0]
+
+]
+
+const extracts=[
+
+{
+text:`Lines 1-4
+
+The crowd roared as Frimpong sprinted down the wing. The stadium trembled with noise.`,
+question:"How does the writer use language to describe the atmosphere? (8 marks)"
+},
+
+{
+text:`Lines 2-5
+
+Wirtz glided past defenders like a shadow. The crowd held its breath.`,
+question:"How does the writer describe Wirtz’s movement? (8 marks)"
+},
+
+{
+text:`Lines 1-4
+
+The silence pressed down on the stadium. Every supporter waited.`,
+question:"How does the writer create tension here? (8 marks)"
+}
+
+]
+
+const weakAnswer="The writer uses words to show excitement."
+
+function loadMC(){
+
+let q=questions[Math.floor(Math.random()*questions.length)]
+
+document.getElementById("question").innerText=q[0]+" — "+q[1]
+
+let html=""
+
 q[2].forEach((a,i)=>{
 html+=`<button onclick="answer(${i},${q[3]})">${a}</button>`
 })
-document.getElementById("mcAnswers").innerHTML=html
+
+document.getElementById("answers").innerHTML=html
 }
 
 function answer(i,c){
-if(i===c){points+=10;step++}
+
+if(i===c){
+
+points+=10
+step++
+document.getElementById("feedback").innerHTML="<span class='correct'>Correct</span>"
+
+}else{
+
+document.getElementById("feedback").innerHTML="<span class='wrong'>Try again</span>"
+return
+}
+
 save()
-location.reload()
+
+setTimeout(()=>location.reload(),400)
+
 }
 
-// exam
-let timeLeft=300
-let timer
+function loadExam(){
 
-function startTimer(){
-timer=setInterval(()=>{
-timeLeft--
-document.getElementById("timer").innerText="⏱ "+timeLeft+"s"
-if(timeLeft<=0){
-clearInterval(timer)
-submitExam()
-}
-},1000)
-}
-
-function showExam(){
 document.getElementById("mcSection").style.display="none"
 document.getElementById("examSection").style.display="block"
 
-let ex=extracts[Math.floor(Math.random()*extracts.length)]
-document.getElementById("extract").innerText=ex.text
-document.getElementById("questionText").innerText=ex.focus+" (8 marks)"
+let e=extracts[Math.floor(Math.random()*extracts.length)]
 
-startTimer()
+document.getElementById("extract").innerText=e.text
+document.getElementById("examQuestion").innerText=e.question
+
 }
 
-// LEVEL MARKING
 function submitExam(){
 
-clearInterval(timer)
+let txt=document.getElementById("examAnswer").value.toLowerCase()
 
-let txt=document.getElementById("answer").value.toLowerCase()
+let quote=txt.includes("'")
+let technique=txt.includes("metaphor")||txt.includes("simile")||txt.includes("verb")||txt.includes("adjective")
+let effect=txt.includes("suggest")||txt.includes("shows")||txt.includes("makes")
 
-let hasQuote = txt.includes("'")
-let hasTechnique = txt.includes("metaphor")||txt.includes("verb")
-let hasEffect = txt.includes("suggest")||txt.includes("shows")
+let score=0
 
-let level=1
+if(quote)score++
+if(technique)score++
+if(effect)score++
 
-if(hasQuote && hasTechnique) level=2
-if(hasQuote && hasTechnique && hasEffect) level=3
+let level=""
 
-let feedback=""
+if(score==1)level="Level 1 (1-2 marks)"
+if(score==2){level="Level 2 (3-5 marks)";points+=20}
+if(score==3){level="Level 3 (6-8 marks)";points+=35}
 
-if(level===1){
-feedback="Level 1 (1–2 marks)\n\nTo improve: add a quote and technique."
+document.getElementById("examFeedback").innerText=
+level+" — Try adding quote + technique + effect."
+
+step++
+save()
+
 }
-if(level===2){
-points+=25
-feedback="Level 2 (3–5 marks)\n\nTo reach Level 3: explain the effect (this suggests…)."
-}
-if(level===3){
-points+=40
-feedback="Level 3 (6–8 marks)\n\nStrong Grade 4 answer."
+
+function loadImprove(){
+
+document.getElementById("examSection").style.display="none"
+document.getElementById("improveSection").style.display="block"
+
+document.getElementById("weak").innerText=weakAnswer
+
 }
 
-document.getElementById("modelAnswer").innerText=feedback
+function submitImprove(){
+
+points+=15
+
+document.getElementById("improveFeedback").innerText="Improvement saved — good work."
 
 step=0
-sessions++
 save()
-}
 
-// rewards
-function updateRewards(){
-let rewards=[150,300,450,600]
-let html=""
-rewards.forEach(r=>{
-html+=`<p>${points>=r?"✓":"○"} ${r}</p>`
-})
-document.getElementById("rewardList").innerHTML=html
+setTimeout(()=>location.reload(),800)
+
 }
 
 function save(){
+
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
 localStorage.setItem("streak",streak)
-localStorage.setItem("sessions",sessions)
+
 }
 
-load()
+loadRewards()
+
+if(step<3){
+
+loadMC()
+
+}else if(step==3){
+
+loadExam()
+
+}else{
+
+loadImprove()
+
+}
 
 </script>
 
