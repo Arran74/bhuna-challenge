@@ -2,224 +2,261 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GCSE English – Bhuna Challenge</title>
+<title>AQA GCSE English – Ultimate Trainer FINAL</title>
 
 <style>
 body{margin:0;background:#eef2f7;font-family:-apple-system;text-align:center;padding:20px;color:#1f2937;}
 .card{background:white;padding:18px;border-radius:14px;margin-top:15px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
 button{background:#1d4ed8;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
-textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid #ccc;}
-.locked{opacity:0.4}.unlocked{color:#059669;font-weight:bold}
+textarea{width:92%;height:120px;border-radius:10px;padding:10px;border:1px solid #ccc;}
 .good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
 .model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
 .improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
 .coach{background:#f0f9ff;padding:10px;border-radius:10px;margin-top:10px}
-.progress{height:10px;background:#e5e7eb;border-radius:8px}
-.bar{height:10px;background:#2563eb;width:0%}
 </style>
 </head>
 
 <body>
 
-<h2>GCSE English – Bhuna Challenge 🔥</h2>
+<h2>AQA GCSE English – Ultimate Trainer 🔥</h2>
+
+<button onclick="setMode('fast')">⚡ Fast Practice</button>
+<button onclick="setMode('exam')">📝 Exam Practice</button>
+<button onclick="startExam()">📝 Full Exam Mode</button>
 
 <div class="card">
-<b>Target:</b> Grade 6 Pass Engine<br>
-<p>🔥 Streak: <b id="streak"></b></p>
-<p><b>Goal:</b> Reach Chicken Bhuna 🍛 to pass!</p>
+<input id="userName" placeholder="Enter name">
+<button onclick="setUser()">Switch User</button>
+<button onclick="resetAll()">Reset</button>
+<p>User: <b id="user"></b></p>
 </div>
 
 <div class="card">
 <p>Points: <b id="points"></b></p>
-<h3>Rewards</h3>
-<div id="rewards"></div>
-<p id="next"></p>
-<div class="progress"><div class="bar" id="bar"></div></div>
+<p>Streak: <b id="streak"></b></p>
+<p>Daily Streak: <b id="daily"></b></p>
+</div>
+
+<div class="card">
+<h3>Dashboard</h3>
+<p>Total Answers: <b id="total"></b></p>
+<p>Average Score: <b id="avg"></b></p>
+<p>Weakest Skill: <b id="weak"></b></p>
+<p>Exam Readiness: <b id="ready"></b></p>
 </div>
 
 <div class="card" id="mc"></div>
-<div class="card" id="exam" style="display:none"></div>
+<div class="card" id="main"></div>
 
 <script>
 
-// STATE (clean – no mode anywhere)
-let points=+localStorage.getItem("points")||0
-let step=+localStorage.getItem("step")||0
-let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
-let streak=+localStorage.getItem("streak")||0
+// ================= USER =================
+let user = localStorage.getItem("user") || "default"
+document.getElementById("user").innerText=user
 
-document.getElementById("points").innerText=points
-document.getElementById("streak").innerText=streak
-
-// REWARDS
-const rewards=[
-{name:"Onion Bhaji",pts:120},
-{name:"Sag Aloo",pts:240},
-{name:"Rice",pts:360},
-{name:"Chicken Bhuna",pts:480}
-]
-
-function loadRewards(){
-let html=""
-rewards.forEach(r=>{
-let u=points>=r.pts
-if(u && !unlocked.includes(r.name)) unlocked.push(r.name)
-html+=`<div class="${u?'unlocked':'locked'}">${r.name} – ${r.pts}</div>`
-})
-localStorage.setItem("unlocked",JSON.stringify(unlocked))
-
-document.getElementById("rewards").innerHTML=html
-
-let next=rewards.find(r=>points<r.pts)
-document.getElementById("next").innerText=
-next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"🏆 All rewards unlocked – Grade 6 achieved!"
-
-document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
-}
-
-// QUESTIONS
-const questions=[
-["The word 'surged' suggests...","Best answer?",["Power and speed","Calm","Weakness"],0],
-["The verb 'crashed' implies...","Best answer?",["Force and impact","Silence","Stillness"],0],
-["'Like a shadow' is...","Technique?",["Simile","Metaphor","Fact"],0],
-["The phrase 'wave of sound' suggests...","Meaning?",["Overwhelming noise","Quiet","Confusion"],0],
-["The writer uses short sentences to...","Answer?",["Create tension","Add detail","Describe setting"],0],
-["The word 'frozen' suggests...","Answer?",["Stillness","Speed","Noise"],0],
-["The verb 'crept' suggests...","Answer?",["Stealth","Power","Joy"],0],
-["The adjective 'cold' suggests...","Answer?",["Emotionless","Warmth","Speed"],0],
-["Why focus on the crowd?","Answer?",["Show reaction","Slow pace","Add humour"],0],
-["The word 'exploded' implies...","Answer?",["Sudden intensity","Calm","Slow movement"],0]
-]
-
-// EXTRACTS
-const extracts=[
-{
-text:`The crowd roared as the player surged forward. A wave of sound crashed across the stadium.`,
-q:"How does the writer present the atmosphere? (8 marks)",
-model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "wave of sound" implies overwhelming noise, creating an intense and energetic atmosphere.`
-},
-{
-text:`The hallway was silent. Each step echoed, sharp and clear.`,
-q:"How is tension created? (8 marks)",
-model:`The short sentence "The hallway was silent" immediately creates tension. The verb "echoed" emphasises how exposed the character feels, suggesting isolation and unease.`
-}
-]
-
-// FLOW
-function load(){
-loadRewards()
-if(step<3) loadMC()
-else loadExam()
-}
-
-// MC PROGRESSION
-function loadMC(){
-
-let level = step < 2 ? 0 : step < 4 ? 1 : 2
-
-let filtered = questions.filter(q => {
-  if(level===0) return q[0].includes("word") || q[0].includes("verb")
-  if(level===1) return true
-  if(level===2) return q[0].includes("phrase") || q[0].includes("writer")
-})
-
-let q = filtered[Math.floor(Math.random()*filtered.length)]
-
-let html="<p>"+q[0]+" — "+q[1]+"</p>"
-q[2].forEach((a,i)=>{
-html+=`<button onclick="ans(${i},${q[3]})">${a}</button>`
-})
-document.getElementById("mc").innerHTML=html
-}
-
-function ans(i,c){
-if(i==c){
-  points+=10
-  step++
-  streak++
-}else{
-  streak=0
-}
-save()
+function setUser(){
+let n=document.getElementById("userName").value
+if(!n) return
+localStorage.setItem("user",n)
 location.reload()
 }
 
-// EXAM
-function loadExam(){
-let e=extracts[Math.floor(Math.random()*extracts.length)]
-
-document.getElementById("mc").style.display="none"
-document.getElementById("exam").style.display="block"
-
-document.getElementById("exam").innerHTML=`
-<p>${e.text}</p>
-<p><b>${e.q}</b></p>
-<textarea id="ansBox"></textarea>
-<button onclick="mark(\`${e.model}\`)">Submit</button>
-<div id="fb"></div>
-`
+function resetAll(){
+if(confirm("Reset all?")){
+localStorage.clear()
+location.reload()
+}
 }
 
-// SMART MARKING
-function mark(model){
+function get(k,d){return JSON.parse(localStorage.getItem(user+"_"+k)) ?? d}
+function set(k,v){localStorage.setItem(user+"_"+k,JSON.stringify(v))}
 
-let raw=document.getElementById("ansBox").value
-let t=raw.toLowerCase()
+// ================= STATE =================
+let points=get("points",0)
+let streak=get("streak",0)
+let stats=get("stats",{total:0,totalScore:0})
+let skills=get("skills",{quote:0,tech:0,effect:0,structure:0})
+let usage=get("usage",{last:null,streak:0})
 
-let hasQuote = t.includes("'")||t.includes('"')
-let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")
-let hasEffect = t.includes("suggest")||t.includes("shows")||t.includes("implies")
-let hasZoom = t.includes("word")||t.includes("verb")
+// ================= MODE =================
+let mode=localStorage.getItem("mode")||"fast"
+function setMode(m){localStorage.setItem("mode",m);location.reload()}
 
-let advancedWords = ["powerful","intense","overwhelming","contrast","emphasises"]
-let sophistication = advancedWords.some(w => t.includes(w))
+// ================= MC =================
+const mc = []
+for(let i=1;i<=100;i++){
+mc.push([`Q${i}: The word 'dramatic' suggests...`,["Strong emotion","Calm","Confusion"],0])
+}
 
-let feedback=[]
-let coach=[]
+// ================= WRITTEN =================
+function makeSet(type){
+let arr=[]
+for(let i=1;i<=15;i++){
+arr.push({
+type:type,
+text:`Extract ${i}: The scene builds tension and atmosphere.`,
+q:`${type} question ${i}`,
+model:`The word 'tension' suggests intensity.`
+})
+}
+return arr
+}
 
-if(!hasQuote){feedback.push("Missing quote");coach.push("Use a short quote")}
-if(!hasTechnique){feedback.push("Missing technique");coach.push("Name it: verb / metaphor / simile")}
-if(!hasEffect){feedback.push("Missing explanation");coach.push("Add: this suggests that...")}
-if(!hasZoom){feedback.push("No word-level zoom");coach.push("Zoom in on one word")}
-if(sophistication){feedback.push("Nice vocabulary")}
+const fast={
+P1Q2:makeSet("Language"),
+P1Q3:makeSet("Structure"),
+P1Q4:makeSet("Evaluation"),
+P2Q2:makeSet("Summary"),
+P2Q3:makeSet("Language"),
+P2Q4:makeSet("Comparison")
+}
 
-let score=[hasQuote,hasTechnique,hasEffect,hasZoom].filter(Boolean).length
+const exam=JSON.parse(JSON.stringify(fast))
 
-let level = score<=1?"Level 1"
-:score==2?"Level 2"
-:"Level 3 / Grade 6 🔥"
+// ================= LOAD =================
+function load(){
+updateUI()
+loadMC()
+loadMain()
+updateDaily()
+updateDashboard()
+}
 
-// SMART SCORING
-let gained = score * 10 + 10
-points += gained
+// ================= UI =================
+function updateUI(){
+document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
+}
 
-document.getElementById("fb").innerHTML=
-`<p><b>${level}</b></p>
-<p>+${gained} points</p>
+// ================= DAILY =================
+function updateDaily(){
+let t=new Date().toDateString()
+if(usage.last!==t){
+usage.streak++
+usage.last=t
+set("usage",usage)
+}
+document.getElementById("daily").innerText=usage.streak
+}
 
-<div class="good"><b>Your answer:</b><br>${raw}</div>
+// ================= DASH =================
+function updateDashboard(){
+document.getElementById("total").innerText=stats.total
+let avg=stats.total? (stats.totalScore/stats.total).toFixed(1):0
+document.getElementById("avg").innerText=avg
 
-<div class="improve"><b>What’s missing:</b><br>${feedback.join("<br>")||"Nothing major"}</div>
+let weak=Object.entries(skills).sort((a,b)=>a[1]-b[1])[0][0]
+document.getElementById("weak").innerText=weak
 
-<div class="coach"><b>How to fix it:</b><br>${coach.join("<br>")||"Excellent structure"}</div>
+document.getElementById("ready").innerText=avg>3?"Ready":"Building"
+}
 
-<div class="coach"><b>Try this:</b><br>
-Point → Evidence → Technique → Explain
-</div>
+// ================= MC =================
+function loadMC(){
+let q=mc[Math.floor(Math.random()*mc.length)]
+let html=`<p>${q[0]}</p>`
+q[1].forEach((a,i)=> html+=`<button onclick="ansMC(${i},${q[2]})">${a}</button>`)
+document.getElementById("mc").innerHTML=html
+}
 
-<div class="model"><b>Grade 6 model:</b><br>${model}</div>
-`
+function ansMC(i,c){
+if(i==c){points+=10;streak++}else{streak=0}
+save();location.reload()
+}
 
-step=0
-streak=0
+// ================= MAIN =================
+function loadMain(){
+let bank=mode==="fast"?fast:exam
+let types=Object.keys(bank)
+let t=types[Math.floor(Math.random()*types.length)]
+let q=bank[t][Math.floor(Math.random()*bank[t].length)]
+
+document.getElementById("main").innerHTML=`
+<p>${q.text}</p>
+<p>${q.q}</p>
+<textarea id="ans"></textarea>
+<button onclick="mark('${t}')">Submit</button>
+<div id="fb"></div>`
+}
+
+// ================= MARK =================
+function mark(type){
+let raw=document.getElementById("ans").value.toLowerCase()
+
+let hasQuote=raw.includes("'")
+let hasTech=/verb|metaphor|simile/.test(raw)
+let hasEffect=/suggests|implies/.test(raw)
+let hasStruct=raw.includes("structure")
+
+skills.quote+=hasQuote?1:-1
+skills.tech+=hasTech?1:-1
+skills.effect+=hasEffect?1:-1
+skills.structure+=hasStruct?1:-1
+
+let score=[hasQuote,hasTech,hasEffect,hasStruct].filter(Boolean).length
+
+if(score<2){
+let improved="The word '___' suggests that..."
+document.getElementById("fb").innerHTML=`
+<div class="good">${raw}</div>
+<div class="model">${improved}</div>`
+return
+}
+
+points+=score*10
+streak++
+stats.total++
+stats.totalScore+=score
+
 save()
+
+document.getElementById("fb").innerHTML=`
+<p>+${score*10} points</p>
+<button onclick="location.reload()">Next</button>`
 }
 
-// SAVE
+// ================= EXAM =================
+let examMode=false,examIndex=0,answers=[]
+
+function startExam(){
+examMode=true
+examIndex=0
+answers=[]
+nextExamQ()
+}
+
+function nextExamQ(){
+let all=[...fast.P1Q2,...fast.P1Q3,...fast.P1Q4]
+let q=all[examIndex]
+document.getElementById("main").innerHTML=`
+<p>${q.text}</p>
+<p>${q.q}</p>
+<textarea id="ans"></textarea>
+<button onclick="submitExam()">Submit</button>`
+}
+
+function submitExam(){
+answers.push(document.getElementById("ans").value)
+examIndex++
+if(examIndex>=3) endExam()
+else nextExamQ()
+}
+
+function endExam(){
+let score=answers.length*25
+document.getElementById("main").innerHTML=`
+<h3>Exam Complete</h3>
+<p>${score}%</p>
+<button onclick="location.reload()">Back</button>`
+}
+
+// ================= SAVE =================
 function save(){
-localStorage.setItem("points",points)
-localStorage.setItem("step",step)
-localStorage.setItem("streak",streak)
+set("points",points)
+set("streak",streak)
+set("stats",stats)
+set("skills",skills)
+set("usage",usage)
 }
 
 load()
