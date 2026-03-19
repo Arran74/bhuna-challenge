@@ -42,7 +42,7 @@ textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid
 
 <script>
 
-// STATE
+// STATE (clean – no mode anywhere)
 let points=+localStorage.getItem("points")||0
 let step=+localStorage.getItem("step")||0
 let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
@@ -67,6 +67,7 @@ if(u && !unlocked.includes(r.name)) unlocked.push(r.name)
 html+=`<div class="${u?'unlocked':'locked'}">${r.name} – ${r.pts}</div>`
 })
 localStorage.setItem("unlocked",JSON.stringify(unlocked))
+
 document.getElementById("rewards").innerHTML=html
 
 let next=rewards.find(r=>points<r.pts)
@@ -78,7 +79,6 @@ document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
 
 // QUESTIONS
 const questions=[
-
 ["The word 'surged' suggests...","Best answer?",["Power and speed","Calm","Weakness"],0],
 ["The verb 'crashed' implies...","Best answer?",["Force and impact","Silence","Stillness"],0],
 ["'Like a shadow' is...","Technique?",["Simile","Metaphor","Fact"],0],
@@ -89,24 +89,20 @@ const questions=[
 ["The adjective 'cold' suggests...","Answer?",["Emotionless","Warmth","Speed"],0],
 ["Why focus on the crowd?","Answer?",["Show reaction","Slow pace","Add humour"],0],
 ["The word 'exploded' implies...","Answer?",["Sudden intensity","Calm","Slow movement"],0]
-
 ]
 
 // EXTRACTS
 const extracts=[
-
 {
 text:`The crowd roared as the player surged forward. A wave of sound crashed across the stadium.`,
 q:"How does the writer present the atmosphere? (8 marks)",
 model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "wave of sound" implies overwhelming noise, creating an intense and energetic atmosphere.`
 },
-
 {
 text:`The hallway was silent. Each step echoed, sharp and clear.`,
 q:"How is tension created? (8 marks)",
 model:`The short sentence "The hallway was silent" immediately creates tension. The verb "echoed" emphasises how exposed the character feels, suggesting isolation and unease.`
 }
-
 ]
 
 // FLOW
@@ -116,7 +112,7 @@ if(step<3) loadMC()
 else loadExam()
 }
 
-// MC WITH PROGRESSION
+// MC PROGRESSION
 function loadMC(){
 
 let level = step < 2 ? 0 : step < 4 ? 1 : 2
@@ -185,10 +181,7 @@ if(!hasQuote){feedback.push("Missing quote");coach.push("Use a short quote")}
 if(!hasTechnique){feedback.push("Missing technique");coach.push("Name it: verb / metaphor / simile")}
 if(!hasEffect){feedback.push("Missing explanation");coach.push("Add: this suggests that...")}
 if(!hasZoom){feedback.push("No word-level zoom");coach.push("Zoom in on one word")}
-
-if(sophistication){
-  feedback.push("Nice vocabulary")
-}
+if(sophistication){feedback.push("Nice vocabulary")}
 
 let score=[hasQuote,hasTechnique,hasEffect,hasZoom].filter(Boolean).length
 
@@ -196,7 +189,7 @@ let level = score<=1?"Level 1"
 :score==2?"Level 2"
 :"Level 3 / Grade 6 🔥"
 
-// SMART POINTS
+// SMART SCORING
 let gained = score * 10 + 10
 points += gained
 
