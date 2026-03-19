@@ -1,1 +1,124 @@
+let user = localStorage.getItem("user") || "default"
+document.getElementById("user").innerText = user
 
+function setUser(){
+let n=document.getElementById("userName").value
+if(!n) return
+localStorage.setItem("user",n)
+location.reload()
+}
+
+function get(k,d){return JSON.parse(localStorage.getItem(user+"_"+k)) ?? d}
+function set(k,v){localStorage.setItem(user+"_"+k,JSON.stringify(v))}
+
+let points=get("points",0)
+let streak=get("streak",0)
+let stats=get("stats",{total:0,totalScore:0})
+let skills=get("skills",{quote:0,tech:0,effect:0,structure:0})
+let usage=get("usage",{last:null,streak:0})
+
+let mode=localStorage.getItem("mode")||"fast"
+function setMode(m){localStorage.setItem("mode",m);location.reload()}
+
+function load(){
+updateUI()
+loadMC()
+loadMain()
+updateDaily()
+updateDashboard()
+}
+
+function updateUI(){
+document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
+}
+
+function updateDaily(){
+let t=new Date().toDateString()
+if(usage.last!==t){
+usage.streak++
+usage.last=t
+set("usage",usage)
+}
+document.getElementById("daily").innerText=usage.streak
+}
+
+function updateDashboard(){
+document.getElementById("total").innerText=stats.total
+let avg=stats.total?(stats.totalScore/stats.total).toFixed(1):0
+document.getElementById("avg").innerText=avg
+document.getElementById("ready").innerText=avg>2?"Improving":"Start Practising"
+
+let weak=Object.entries(skills).sort((a,b)=>a[1]-b[1])[0][0]
+document.getElementById("weak").innerText=weak
+}
+
+function loadMC(){
+let q=MC_QUESTIONS[Math.floor(Math.random()*MC_QUESTIONS.length)]
+document.getElementById("mc").innerHTML=`
+<p>${q[0]}</p>
+<button onclick="ansMC(true)">Correct</button>
+<button onclick="ansMC(false)">Incorrect</button>`
+}
+
+function ansMC(correct){
+if(correct){points+=10;streak++}else{streak=0}
+save()
+location.reload()
+}
+
+function loadMain(){
+let bank = mode==="fast"?FAST_QUESTIONS:EXAM_QUESTIONS
+let types = Object.keys(bank)
+let t = types[Math.floor(Math.random()*types.length)]
+let q = bank[t][Math.floor(Math.random()*bank[t].length)]
+
+document.getElementById("main").innerHTML=`
+<p>${q.text}</p>
+<p>${q.q}</p>
+<textarea id="ans"></textarea>
+<button onclick="mark('${t}')">Submit</button>
+<div id="fb"></div>`
+}
+
+function mark(type){
+let raw=document.getElementById("ans").value.toLowerCase()
+
+let hasQuote=raw.includes("'")
+let hasTech=/verb|metaphor|simile/.test(raw)
+let hasEffect=/suggests|implies/.test(raw)
+
+let score=[hasQuote,hasTech,hasEffect].filter(Boolean).length
+
+if(score<2){
+document.getElementById("fb").innerHTML=`
+<p>Improve your answer:</p>
+<p>The word '___' suggests that...</p>`
+return
+}
+
+points+=score*10
+streak++
+stats.total++
+stats.totalScore+=score
+
+save()
+
+document.getElementById("fb").innerHTML=`
+<p>+${score*10} points</p>
+<button onclick="location.reload()">Next</button>`
+}
+
+function startExam(){
+alert("Exam mode coming next upgrade")
+}
+
+function save(){
+set("points",points)
+set("streak",streak)
+set("stats",stats)
+set("skills",skills)
+set("usage",usage)
+}
+
+load()
