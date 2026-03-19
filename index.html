@@ -21,13 +21,12 @@ textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid
 
 <body>
 
-<h2>GCSE English – Bhuna Challenge</h2>
+<h2>GCSE English – Bhuna Challenge 🔥</h2>
 
 <div class="card">
-<b>Mode:</b><br>
-<button onclick="setMode('4')">Grade 4</button>
-<button onclick="setMode('6')">Grade 6</button>
-<p id="modeDisplay"></p>
+<b>Target:</b> Grade 6 Pass Engine<br>
+<p>🔥 Streak: <b id="streak"></b></p>
+<p><b>Goal:</b> Reach Chicken Bhuna 🍛 to pass!</p>
 </div>
 
 <div class="card">
@@ -43,17 +42,14 @@ textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid
 
 <script>
 
-// MODE
-let mode=localStorage.getItem("mode")||"4"
-function setMode(m){mode=m;localStorage.setItem("mode",m);location.reload()}
-document.getElementById("modeDisplay").innerText=
-mode==="6"?"Grade 6 Mode 🔥":"Grade 4 Mode"
-
 // STATE
 let points=+localStorage.getItem("points")||0
 let step=+localStorage.getItem("step")||0
 let unlocked=JSON.parse(localStorage.getItem("unlocked"))||[]
+let streak=+localStorage.getItem("streak")||0
+
 document.getElementById("points").innerText=points
+document.getElementById("streak").innerText=streak
 
 // REWARDS
 const rewards=[
@@ -75,12 +71,12 @@ document.getElementById("rewards").innerHTML=html
 
 let next=rewards.find(r=>points<r.pts)
 document.getElementById("next").innerText=
-next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"All rewards unlocked"
+next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"🏆 All rewards unlocked – Grade 6 achieved!"
 
 document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
 }
 
-// LARGE MC BANK (MIXED)
+// QUESTIONS
 const questions=[
 
 ["The word 'surged' suggests...","Best answer?",["Power and speed","Calm","Weakness"],0],
@@ -92,23 +88,11 @@ const questions=[
 ["The verb 'crept' suggests...","Answer?",["Stealth","Power","Joy"],0],
 ["The adjective 'cold' suggests...","Answer?",["Emotionless","Warmth","Speed"],0],
 ["Why focus on the crowd?","Answer?",["Show reaction","Slow pace","Add humour"],0],
-["The word 'exploded' implies...","Answer?",["Sudden intensity","Calm","Slow movement"],0],
-
-["The phrase 'heart pounding' suggests...","Answer?",["Fear/excitement","Calm","Boredom"],0],
-["The verb 'stumbled' suggests...","Answer?",["Lack of control","Confidence","Speed"],0],
-["The word 'glared' suggests...","Answer?",["Anger","Happiness","Confusion"],0],
-["The phrase 'silence fell' suggests...","Answer?",["Sudden quiet","Noise","Chaos"],0],
-["The verb 'rushed' suggests...","Answer?",["Urgency","Relaxation","Stillness"],0],
-
-["'As quick as lightning' is...","Answer?",["Simile","Metaphor","Verb"],0],
-["The word 'trembled' suggests...","Answer?",["Fear","Confidence","Anger"],0],
-["The phrase 'storm of noise' suggests...","Answer?",["Chaos","Calm","Silence"],0],
-["The verb 'charged' suggests...","Answer?",["Aggression","Calm","Fear"],0],
-["The word 'whispered' suggests...","Answer?",["Quiet","Loud","Fast"],0]
+["The word 'exploded' implies...","Answer?",["Sudden intensity","Calm","Slow movement"],0]
 
 ]
 
-// EXTRACTS (VARIED)
+// EXTRACTS
 const extracts=[
 
 {
@@ -121,30 +105,6 @@ model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "
 text:`The hallway was silent. Each step echoed, sharp and clear.`,
 q:"How is tension created? (8 marks)",
 model:`The short sentence "The hallway was silent" immediately creates tension. The verb "echoed" emphasises how exposed the character feels, suggesting isolation and unease.`
-},
-
-{
-text:`The city never slept; lights flickered and voices carried through the night.`,
-q:"How is the setting presented? (8 marks)",
-model:`The personification "city never slept" suggests constant activity. The verbs "flickered" and "carried" create a sense of movement, presenting the setting as lively and restless.`
-},
-
-{
-text:`He crept through the darkness, his breath shallow and uneven.`,
-q:"How is the character presented? (8 marks)",
-model:`The verb "crept" suggests stealth and fear. The description "shallow and uneven" breathing implies anxiety, presenting the character as nervous and vulnerable.`
-},
-
-{
-text:`Rain hammered against the windows, drowning out all other sound.`,
-q:"How does the writer use language? (8 marks)",
-model:`The verb "hammered" suggests force and intensity. The phrase "drowning out" implies overwhelming noise, creating a powerful and oppressive atmosphere.`
-},
-
-{
-text:`The article claims that social media has transformed communication, making it instant but less personal.`,
-q:"How is the writer’s viewpoint presented? (8 marks)",
-model:`The word "transformed" suggests significant change. The contrast between "instant" and "less personal" highlights both advantages and drawbacks, presenting a balanced viewpoint.`
 }
 
 ]
@@ -156,9 +116,19 @@ if(step<3) loadMC()
 else loadExam()
 }
 
-// MC
+// MC WITH PROGRESSION
 function loadMC(){
-let q=questions[Math.floor(Math.random()*questions.length)]
+
+let level = step < 2 ? 0 : step < 4 ? 1 : 2
+
+let filtered = questions.filter(q => {
+  if(level===0) return q[0].includes("word") || q[0].includes("verb")
+  if(level===1) return true
+  if(level===2) return q[0].includes("phrase") || q[0].includes("writer")
+})
+
+let q = filtered[Math.floor(Math.random()*filtered.length)]
+
 let html="<p>"+q[0]+" — "+q[1]+"</p>"
 q[2].forEach((a,i)=>{
 html+=`<button onclick="ans(${i},${q[3]})">${a}</button>`
@@ -167,7 +137,14 @@ document.getElementById("mc").innerHTML=html
 }
 
 function ans(i,c){
-if(i==c){points+=10;step++;save()}
+if(i==c){
+  points+=10
+  step++
+  streak++
+}else{
+  streak=0
+}
+save()
 location.reload()
 }
 
@@ -187,7 +164,7 @@ document.getElementById("exam").innerHTML=`
 `
 }
 
-// SMART MARK
+// SMART MARKING
 function mark(model){
 
 let raw=document.getElementById("ansBox").value
@@ -198,28 +175,50 @@ let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("ver
 let hasEffect = t.includes("suggest")||t.includes("shows")||t.includes("implies")
 let hasZoom = t.includes("word")||t.includes("verb")
 
+let advancedWords = ["powerful","intense","overwhelming","contrast","emphasises"]
+let sophistication = advancedWords.some(w => t.includes(w))
+
 let feedback=[]
 let coach=[]
 
-if(!hasQuote){feedback.push("Missing quote");coach.push("Try: The word '___' suggests...")}
-if(!hasTechnique){feedback.push("Missing technique");coach.push("Name it: metaphor / verb / simile")}
+if(!hasQuote){feedback.push("Missing quote");coach.push("Use a short quote")}
+if(!hasTechnique){feedback.push("Missing technique");coach.push("Name it: verb / metaphor / simile")}
 if(!hasEffect){feedback.push("Missing explanation");coach.push("Add: this suggests that...")}
-if(mode==="6" && !hasZoom){feedback.push("No word-level zoom");coach.push("Zoom in on one word")}
+if(!hasZoom){feedback.push("No word-level zoom");coach.push("Zoom in on one word")}
 
-let score=[hasQuote,hasTechnique,hasEffect,(mode==="6"?hasZoom:true)].filter(Boolean).length
+if(sophistication){
+  feedback.push("Nice vocabulary")
+}
 
-let level = score<=1?"Level 1":score==2?"Level 2":"Level 3 / Grade 6 🔥"
+let score=[hasQuote,hasTechnique,hasEffect,hasZoom].filter(Boolean).length
+
+let level = score<=1?"Level 1"
+:score==2?"Level 2"
+:"Level 3 / Grade 6 🔥"
+
+// SMART POINTS
+let gained = score * 10 + 10
+points += gained
 
 document.getElementById("fb").innerHTML=
 `<p><b>${level}</b></p>
+<p>+${gained} points</p>
+
 <div class="good"><b>Your answer:</b><br>${raw}</div>
+
 <div class="improve"><b>What’s missing:</b><br>${feedback.join("<br>")||"Nothing major"}</div>
+
 <div class="coach"><b>How to fix it:</b><br>${coach.join("<br>")||"Excellent structure"}</div>
+
+<div class="coach"><b>Try this:</b><br>
+Point → Evidence → Technique → Explain
+</div>
+
 <div class="model"><b>Grade 6 model:</b><br>${model}</div>
 `
 
-points+=25
 step=0
+streak=0
 save()
 }
 
@@ -227,6 +226,7 @@ save()
 function save(){
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
+localStorage.setItem("streak",streak)
 }
 
 load()
