@@ -5,49 +5,15 @@
 <title>GCSE English – Bhuna Challenge</title>
 
 <style>
-body{
-margin:0;
-background:#eef2f7;
-font-family:-apple-system;
-text-align:center;
-padding:20px;
-color:#1f2937;
-}
-
-.card{
-background:white;
-padding:18px;
-border-radius:14px;
-margin-top:15px;
-box-shadow:0 6px 18px rgba(0,0,0,0.08);
-}
-
-button{
-background:#1d4ed8;
-color:white;
-border:none;
-padding:14px;
-border-radius:10px;
-margin:6px;
-width:90%;
-}
-
-textarea{
-width:92%;
-height:110px;
-border-radius:10px;
-padding:10px;
-border:1px solid #ccc;
-}
-
-.locked{opacity:0.4}
-.unlocked{color:#059669;font-weight:bold}
-
+body{margin:0;background:#eef2f7;font-family:-apple-system;text-align:center;padding:20px;color:#1f2937;}
+.card{background:white;padding:18px;border-radius:14px;margin-top:15px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+button{background:#1d4ed8;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
+textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid #ccc;}
+.locked{opacity:0.4}.unlocked{color:#059669;font-weight:bold}
 .good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
 .model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
 .improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
 .coach{background:#f0f9ff;padding:10px;border-radius:10px;margin-top:10px}
-
 .progress{height:10px;background:#e5e7eb;border-radius:8px}
 .bar{height:10px;background:#2563eb;width:0%}
 </style>
@@ -114,23 +80,79 @@ next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"All rewards unlocked"
 document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
 }
 
-// QUESTIONS
+// LARGE MC BANK (MIXED)
 const questions=[
-["The word 'surged' suggests...","Best answer?",["Power and speed","Calm movement","Weakness"],0],
-["The phrase 'wave of sound' suggests...","Best answer?",["Overwhelming noise","Quiet","Confusion"],0]
+
+["The word 'surged' suggests...","Best answer?",["Power and speed","Calm","Weakness"],0],
+["The verb 'crashed' implies...","Best answer?",["Force and impact","Silence","Stillness"],0],
+["'Like a shadow' is...","Technique?",["Simile","Metaphor","Fact"],0],
+["The phrase 'wave of sound' suggests...","Meaning?",["Overwhelming noise","Quiet","Confusion"],0],
+["The writer uses short sentences to...","Answer?",["Create tension","Add detail","Describe setting"],0],
+["The word 'frozen' suggests...","Answer?",["Stillness","Speed","Noise"],0],
+["The verb 'crept' suggests...","Answer?",["Stealth","Power","Joy"],0],
+["The adjective 'cold' suggests...","Answer?",["Emotionless","Warmth","Speed"],0],
+["Why focus on the crowd?","Answer?",["Show reaction","Slow pace","Add humour"],0],
+["The word 'exploded' implies...","Answer?",["Sudden intensity","Calm","Slow movement"],0],
+
+["The phrase 'heart pounding' suggests...","Answer?",["Fear/excitement","Calm","Boredom"],0],
+["The verb 'stumbled' suggests...","Answer?",["Lack of control","Confidence","Speed"],0],
+["The word 'glared' suggests...","Answer?",["Anger","Happiness","Confusion"],0],
+["The phrase 'silence fell' suggests...","Answer?",["Sudden quiet","Noise","Chaos"],0],
+["The verb 'rushed' suggests...","Answer?",["Urgency","Relaxation","Stillness"],0],
+
+["'As quick as lightning' is...","Answer?",["Simile","Metaphor","Verb"],0],
+["The word 'trembled' suggests...","Answer?",["Fear","Confidence","Anger"],0],
+["The phrase 'storm of noise' suggests...","Answer?",["Chaos","Calm","Silence"],0],
+["The verb 'charged' suggests...","Answer?",["Aggression","Calm","Fear"],0],
+["The word 'whispered' suggests...","Answer?",["Quiet","Loud","Fast"],0]
+
 ]
 
-// EXTRACT
-const extract={
-text:`The crowd roared as Frimpong surged forward. The sound crashed across the stadium.`,
-q:"How does the writer describe the atmosphere? (8 marks)",
-model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "crashed across the stadium" implies overwhelming noise, creating a dramatic atmosphere.`
+// EXTRACTS (VARIED)
+const extracts=[
+
+{
+text:`The crowd roared as the player surged forward. A wave of sound crashed across the stadium.`,
+q:"How does the writer present the atmosphere? (8 marks)",
+model:`The verb "surged" suggests powerful, unstoppable movement. The metaphor "wave of sound" implies overwhelming noise, creating an intense and energetic atmosphere.`
+},
+
+{
+text:`The hallway was silent. Each step echoed, sharp and clear.`,
+q:"How is tension created? (8 marks)",
+model:`The short sentence "The hallway was silent" immediately creates tension. The verb "echoed" emphasises how exposed the character feels, suggesting isolation and unease.`
+},
+
+{
+text:`The city never slept; lights flickered and voices carried through the night.`,
+q:"How is the setting presented? (8 marks)",
+model:`The personification "city never slept" suggests constant activity. The verbs "flickered" and "carried" create a sense of movement, presenting the setting as lively and restless.`
+},
+
+{
+text:`He crept through the darkness, his breath shallow and uneven.`,
+q:"How is the character presented? (8 marks)",
+model:`The verb "crept" suggests stealth and fear. The description "shallow and uneven" breathing implies anxiety, presenting the character as nervous and vulnerable.`
+},
+
+{
+text:`Rain hammered against the windows, drowning out all other sound.`,
+q:"How does the writer use language? (8 marks)",
+model:`The verb "hammered" suggests force and intensity. The phrase "drowning out" implies overwhelming noise, creating a powerful and oppressive atmosphere.`
+},
+
+{
+text:`The article claims that social media has transformed communication, making it instant but less personal.`,
+q:"How is the writer’s viewpoint presented? (8 marks)",
+model:`The word "transformed" suggests significant change. The contrast between "instant" and "less personal" highlights both advantages and drawbacks, presenting a balanced viewpoint.`
 }
+
+]
 
 // FLOW
 function load(){
 loadRewards()
-if(step<2) loadMC()
+if(step<3) loadMC()
 else loadExam()
 }
 
@@ -151,72 +173,52 @@ location.reload()
 
 // EXAM
 function loadExam(){
+let e=extracts[Math.floor(Math.random()*extracts.length)]
+
 document.getElementById("mc").style.display="none"
 document.getElementById("exam").style.display="block"
 
 document.getElementById("exam").innerHTML=`
-<p>${extract.text}</p>
-<p><b>${extract.q}</b></p>
+<p>${e.text}</p>
+<p><b>${e.q}</b></p>
 <textarea id="ansBox"></textarea>
-<button onclick="mark()">Submit</button>
+<button onclick="mark(\`${e.model}\`)">Submit</button>
 <div id="fb"></div>
 `
 }
 
-// SMART COACH MARKING
-function mark(){
+// SMART MARK
+function mark(model){
 
 let raw=document.getElementById("ansBox").value
 let t=raw.toLowerCase()
 
 let hasQuote = t.includes("'")||t.includes('"')
-let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")
-let hasEffect = t.includes("suggest")||t.includes("shows")
+let hasTechnique = t.includes("metaphor")||t.includes("simile")||t.includes("verb")||t.includes("adjective")
+let hasEffect = t.includes("suggest")||t.includes("shows")||t.includes("implies")
 let hasZoom = t.includes("word")||t.includes("verb")
 
 let feedback=[]
 let coach=[]
 
-if(!hasQuote){
-feedback.push("Missing quote")
-coach.push("👉 Try: The word 'surged' suggests...")
-}
-
-if(!hasTechnique){
-feedback.push("Missing technique")
-coach.push("👉 Name it: metaphor / verb / simile")
-}
-
-if(!hasEffect){
-feedback.push("Missing explanation")
-coach.push("👉 Add: this suggests that...")
-}
-
-if(mode==="6" && !hasZoom){
-feedback.push("No word-level analysis")
-coach.push("👉 Zoom in on one word")
-}
+if(!hasQuote){feedback.push("Missing quote");coach.push("Try: The word '___' suggests...")}
+if(!hasTechnique){feedback.push("Missing technique");coach.push("Name it: metaphor / verb / simile")}
+if(!hasEffect){feedback.push("Missing explanation");coach.push("Add: this suggests that...")}
+if(mode==="6" && !hasZoom){feedback.push("No word-level zoom");coach.push("Zoom in on one word")}
 
 let score=[hasQuote,hasTechnique,hasEffect,(mode==="6"?hasZoom:true)].filter(Boolean).length
 
-let level=""
-if(score<=1) level="Level 1"
-else if(score==2) level="Level 2"
-else if(score>=3) level="Level 3 / Grade 6 🔥"
+let level = score<=1?"Level 1":score==2?"Level 2":"Level 3 / Grade 6 🔥"
 
 document.getElementById("fb").innerHTML=
 `<p><b>${level}</b></p>
-
 <div class="good"><b>Your answer:</b><br>${raw}</div>
-
 <div class="improve"><b>What’s missing:</b><br>${feedback.join("<br>")||"Nothing major"}</div>
-
-<div class="coach"><b>How to fix it:</b><br>${coach.join("<br>")||"Excellent — keep this structure"}</div>
-
-<div class="model"><b>Grade 6 model:</b><br>${extract.model}</div>
+<div class="coach"><b>How to fix it:</b><br>${coach.join("<br>")||"Excellent structure"}</div>
+<div class="model"><b>Grade 6 model:</b><br>${model}</div>
 `
 
-points+=20
+points+=25
 step=0
 save()
 }
