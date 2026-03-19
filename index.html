@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GCSE English – Bhuna Challenge</title>
+<title>AQA GCSE English – Bhuna Challenge</title>
 
 <style>
 body{margin:0;background:#eef2f7;font-family:-apple-system;text-align:center;padding:20px;color:#1f2937;}
@@ -10,20 +10,16 @@ body{margin:0;background:#eef2f7;font-family:-apple-system;text-align:center;pad
 button{background:#1d4ed8;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
 input{width:90%;padding:10px;border-radius:8px;border:1px solid #ccc;margin:5px;}
 textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid #ccc;}
-.locked{opacity:0.4}.unlocked{color:#059669;font-weight:bold}
-.good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
-.model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
-.improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
-.coach{background:#f0f9ff;padding:10px;border-radius:10px;margin-top:10px}
 .progress{height:10px;background:#e5e7eb;border-radius:8px}
 .bar{height:10px;background:#2563eb;width:0%}
+.good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
+.model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<h2>GCSE English – Bhuna Challenge 🔥</h2>
-
+<h2>AQA GCSE English – Bhuna Challenge 🔥</h2>
 <button onclick="startExam()">📝 Start Exam Mode</button>
 
 <div class="card">
@@ -34,17 +30,12 @@ textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid
 </div>
 
 <div class="card">
-<b>Target:</b> Grade 6 Pass Engine<br>
 <p>🔥 Streak: <b id="streak"></b></p>
 <p>🎯 Focus: <b id="focus"></b></p>
-<p><b>Goal:</b> Reach Chicken Bhuna 🍛</p>
 </div>
 
 <div class="card">
 <p>Points: <b id="points"></b></p>
-<div id="rewards"></div>
-<p id="next"></p>
-<div class="progress"><div class="bar" id="bar"></div></div>
 </div>
 
 <div class="card">
@@ -105,16 +96,61 @@ let usage = get("usage",{lastDate:null,streak:0})
 // EXAM STATE
 let examMode=false,examIndex=0,examAnswers=[],examTime=600,timerInterval=null
 
-// DATA
+// MC QUESTIONS (short retrieval)
 const questions=[
 ["The word 'surged' suggests...","Best answer?",["Power and speed","Calm","Weakness"],0],
-["The verb 'crashed' implies...","Best answer?",["Force and impact","Silence","Stillness"],0],
-["'Like a shadow' is...","Technique?",["Simile","Metaphor","Fact"],0]
+["'Like a shadow' is...","Technique?",["Simile","Metaphor","Fact"],0],
+["The word 'trembled' suggests...","Meaning?",["Fear","Confidence","Anger"],0],
+["The phrase 'storm of noise' suggests...","Meaning?",["Chaos","Calm","Silence"],0],
+["The verb 'crept' suggests...","Meaning?",["Stealth","Confidence","Speed"],0]
 ]
 
+// AQA EXTRACTS
 const extracts=[
-{text:`The crowd roared as the player surged forward.`,q:"How is atmosphere presented?",model:`The verb "surged" suggests powerful movement.`},
-{text:`The hallway was silent.`,q:"How is tension created?",model:`The short sentence creates tension.`}
+
+// PAPER 1
+{
+type:"P1Q2",
+text:`The crowd roared as the player surged forward. A wave of sound crashed across the stadium.`,
+q:"Q2: How does the writer use language to describe the atmosphere? (8 marks)",
+model:`The verb "surged" suggests powerful movement.`
+},
+
+{
+type:"P1Q3",
+text:`The hallway was silent. Then a door creaked open. Footsteps echoed closer.`,
+q:"Q3: How has the writer structured the text to interest you? (8 marks)",
+model:`The writer builds tension gradually.`
+},
+
+{
+type:"P1Q4",
+text:`The storm raged violently, tearing through the town.`,
+q:"Q4: A student said this storm is terrifying. To what extent do you agree? (20 marks)",
+model:`I agree because the verb "raged" suggests power.`
+},
+
+// PAPER 2
+{
+type:"P2Q2",
+text:`Source A shows city life as exciting. Source B shows it as stressful.`,
+q:"Q2: Write a summary of the differences. (8 marks)",
+model:`Source A is positive, Source B is negative.`
+},
+
+{
+type:"P2Q3",
+text:`The article claims social media is instant but less personal.`,
+q:"Q3: How does the writer use language? (12 marks)",
+model:`The word "instant" suggests speed.`
+},
+
+{
+type:"P2Q4",
+text:`Source A celebrates modern life, Source B criticises it.`,
+q:"Q4: Compare how writers present viewpoints. (16 marks)",
+model:`Source A is positive while Source B is negative.`
+}
 ]
 
 // INIT
@@ -136,7 +172,7 @@ else loadExamPractice()
 // FOCUS
 function updateFocus(){
 let weakest = Object.entries(skills).sort((a,b)=>a[1]-b[1])[0][0]
-let map={quote:"Using quotes",technique:"Techniques",effect:"Explanation",zoom:"Zoom"}
+let map={quote:"Quotes",technique:"Techniques",effect:"Explanation",zoom:"Zoom"}
 document.getElementById("focus").innerText=map[weakest]
 document.getElementById("weakestSkill").innerText=map[weakest]
 }
@@ -164,7 +200,7 @@ document.getElementById("exam").innerHTML=`
 <p>${e.text}</p>
 <p>${e.q}</p>
 <textarea id="ansBox"></textarea>
-<button onclick="mark(\`${e.model}\`)">Submit</button>
+<button onclick="mark()">Submit</button>
 <div id="fb"></div>`
 }
 
@@ -172,32 +208,26 @@ document.getElementById("exam").innerHTML=`
 function rewriteAnswer(raw){
 let improved=raw
 if(!raw.includes("'")) improved="The word '___' "+improved
-if(!/verb|metaphor|simile/.test(improved)) improved=improved.replace("suggests","verb suggests")
+if(!/verb|metaphor|simile/.test(improved)) improved+=" using language"
 if(!/suggests|implies|shows/.test(improved)) improved+=" This suggests that..."
 return improved
 }
 
-// MARK
-function mark(model){
+// AQA MARKING
+function mark(){
 
 let raw=document.getElementById("ansBox").value
 let t=raw.toLowerCase()
 
 let hasQuote=t.includes("'")
-let hasTechnique=/verb|metaphor|simile/.test(t)
+let hasTechnique=/verb|metaphor|simile|structure|language/.test(t)
 let hasEffect=/suggests|implies|shows/.test(t)
-let hasZoom=t.includes("word")
+let hasOpinion=/i agree|i think/.test(t)
+let hasCompare=/however|whereas|both/.test(t)
 
-skills.quote+=hasQuote?1:-1
-skills.technique+=hasTechnique?1:-1
-skills.effect+=hasEffect?1:-1
-skills.zoom+=hasZoom?1:-1
+let score = [hasQuote,hasTechnique,hasEffect,hasOpinion,hasCompare].filter(Boolean).length
 
-set("skills",skills)
-
-let score=[hasQuote,hasTechnique,hasEffect,hasZoom].filter(Boolean).length
-
-if(score<3){
+if(score<2){
 let improved=rewriteAnswer(raw)
 document.getElementById("fb").innerHTML=`
 <div class="good">${raw}</div>
@@ -209,21 +239,19 @@ return
 points+=score*10
 stats.total++
 stats.totalScore+=score
-
 set("stats",stats)
 
 document.getElementById("fb").innerHTML=`
+<p>✅ AQA Response</p>
 <p>+${score*10} points</p>
 <button onclick="nextQuestion()">Continue</button>`
 }
 
-// RETRY
 function retry(){
 let raw=document.getElementById("ansBox").value
 document.getElementById("ansBox").value=rewriteAnswer(raw)
 }
 
-// NEXT
 function nextQuestion(){
 step=0
 save()
@@ -247,7 +275,7 @@ set("usage",usage)
 document.getElementById("dailyStreak").innerText=usage.streak
 }
 
-// EXAM READINESS
+// READINESS
 function updateExamReadiness(){
 let avg=stats.total?(stats.totalScore/stats.total):0
 let score=Math.round(avg*25)
@@ -284,7 +312,7 @@ document.getElementById("exam").innerHTML=`
 function submitExam(){
 examAnswers.push(document.getElementById("ansBox").value)
 examIndex++
-if(examIndex>=2) endExam()
+if(examIndex>=3) endExam()
 else loadExamQ()
 }
 
