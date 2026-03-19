@@ -159,6 +159,31 @@ document.getElementById("fb").innerHTML=`
 <div class="good">${raw}</div>
 <div class="improve">${feedback.join("<br>")||"Good work"}</div>
 <div class="model">${model}</div>
+
+<button onclick="nextStep()" style="margin-top:10px;">Next Question ➡️</button>
+`
+
+points+=score*10
+step=0
+save()
+}
+let raw=document.getElementById("ans").value.toLowerCase()
+
+let hasQuote = raw.includes("'")
+let hasTech = /verb|metaphor|simile/.test(raw)
+let hasEffect = /suggest|implies|shows/.test(raw)
+
+let feedback=[]
+if(!hasQuote) feedback.push("Missing quote")
+if(!hasTech) feedback.push("Missing technique")
+if(!hasEffect) feedback.push("Missing explanation")
+
+let score=[hasQuote,hasTech,hasEffect].filter(Boolean).length
+
+document.getElementById("fb").innerHTML=`
+<div class="good">${raw}</div>
+<div class="improve">${feedback.join("<br>")||"Good work"}</div>
+<div class="model">${model}</div>
 `
 
 points+=score*10
