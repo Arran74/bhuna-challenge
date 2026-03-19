@@ -5,16 +5,42 @@
 <title>GCSE English – Bhuna Challenge</title>
 
 <style>
-body{margin:0;background:#eef2f7;font-family:-apple-system;text-align:center;padding:20px;color:#1f2937;}
-.card{background:white;padding:18px;border-radius:14px;margin-top:15px;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
-button{background:#1d4ed8;color:white;border:none;padding:14px;border-radius:10px;margin:6px;width:90%;}
-textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid #ccc;}
+body{
+margin:0;
+background:#eef2f7;
+font-family:-apple-system;
+text-align:center;
+padding:20px;
+color:#1f2937;
+}
+.card{
+background:white;
+padding:18px;
+border-radius:14px;
+margin-top:15px;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+button{
+background:#1d4ed8;
+color:white;
+border:none;
+padding:14px;
+border-radius:10px;
+margin:6px;
+width:90%;
+}
+textarea{
+width:92%;
+height:110px;
+border-radius:10px;
+padding:10px;
+border:1px solid #ccc;
+}
 .locked{opacity:0.4}
 .unlocked{color:#059669;font-weight:bold}
 .good{background:#ecfdf5;padding:10px;border-radius:10px;margin-top:10px}
 .model{background:#eff6ff;padding:10px;border-radius:10px;margin-top:10px}
 .improve{background:#fff7ed;padding:10px;border-radius:10px;margin-top:10px}
-.coach{background:#f0f9ff;padding:10px;border-radius:10px;margin-top:10px}
 .progress{height:10px;background:#e5e7eb;border-radius:8px}
 .bar{height:10px;background:#2563eb;width:0%}
 </style>
@@ -37,13 +63,13 @@ textarea{width:92%;height:110px;border-radius:10px;padding:10px;border:1px solid
 
 <script>
 
-// STATE
+// ================= STATE =================
 let points = +localStorage.getItem("points") || 0
 let step = +localStorage.getItem("step") || 0
 
 document.getElementById("points").innerText = points
 
-// REWARDS
+// ================= REWARDS =================
 const rewards=[
 {name:"Onion Bhaji",pts:120},
 {name:"Sag Aloo",pts:240},
@@ -53,148 +79,137 @@ const rewards=[
 
 function loadRewards(){
 let html=""
-rewards.forEach(r=>{
+for(let i=0;i<rewards.length;i++){
+let r = rewards[i]
 let unlocked = points>=r.pts
-html+=`<div class="${unlocked?'unlocked':'locked'}">${r.name} – ${r.pts}</div>`
-})
-
-document.getElementById("rewards").innerHTML=html
-
-let next=rewards.find(r=>points<r.pts)
-document.getElementById("next").innerText=
-next? "Next: "+next.name+" ("+(next.pts-points)+" pts)":"All rewards unlocked"
-
-document.getElementById("bar").style.width=(Math.min(points/480,1)*100)+"%"
+html += '<div class="'+(unlocked?'unlocked':'locked')+'">'+r.name+' – '+r.pts+'</div>'
 }
 
-// MC QUESTIONS
+document.getElementById("rewards").innerHTML = html
+
+let next = rewards.find(r=>points<r.pts)
+document.getElementById("next").innerText =
+next ? "Next: "+next.name+" ("+(next.pts-points)+" pts)" : "All rewards unlocked"
+
+document.getElementById("bar").style.width = (Math.min(points/480,1)*100)+"%"
+}
+
+// ================= MC =================
 const questions=[
-["The word 'surged' suggests...","Power and speed"],
-["The word 'crept' suggests...","Stealth"],
-["The word 'hammered' suggests...","Force"],
-["The word 'glared' suggests...","Anger"],
-["The word 'trembled' suggests...","Fear"],
-["The phrase 'storm of noise' suggests...","Chaos"],
-["The phrase 'heavy silence' suggests...","Tension"],
-["Short sentences create...","Tension"],
-["Repetition suggests...","Importance"],
-["Contrast shows...","Difference"]
+["The word 'surged' suggests..."],
+["The word 'crept' suggests..."],
+["The word 'hammered' suggests..."],
+["The word 'glared' suggests..."],
+["The word 'trembled' suggests..."],
+["The phrase 'storm of noise' suggests..."],
+["The phrase 'heavy silence' suggests..."],
+["Short sentences create..."],
+["Repetition suggests..."],
+["Contrast shows..."]
 ]
 
-// EXTRACTS
-const extracts=[
-{
-text:"The crowd roared as the player surged forward. A wave of sound crashed across the stadium.",
-q:"How does the writer present the atmosphere? (8 marks)",
-model:"The verb 'surged' suggests powerful movement. The metaphor 'wave of sound' implies overwhelming noise, creating intensity."
-},
-{
-text:"The hallway was silent. Each step echoed, sharp and clear.",
-q:"How is tension created? (8 marks)",
-model:"The short sentence creates tension. The verb 'echoed' suggests isolation and unease."
-},
-{
-text:"He crept through the darkness, his breath shallow and uneven.",
-q:"How is the character presented? (8 marks)",
-model:"The verb 'crept' suggests fear. The description shows anxiety."
-}
-]
-
-// LOAD
-function load(){
-loadRewards()
-if(step<3) loadMC()
-else loadExam()
-}
-
-// MC
 function loadMC(){
-let q=questions[Math.floor(Math.random()*questions.length)]
+let q = questions[Math.floor(Math.random()*questions.length)]
 
-let html="<p>"+q[0]+"</p>"
-html+=`<button onclick="answer(true)">Correct idea</button>`
-html+=`<button onclick="answer(false)">Incorrect idea</button>`
+let html = "<p>"+q[0]+"</p>"
+html += '<button onclick="answer(true)">Correct idea</button>'
+html += '<button onclick="answer(false)">Incorrect idea</button>'
 
-document.getElementById("mc").innerHTML=html
+document.getElementById("mc").innerHTML = html
 }
 
+// ================= ANSWER =================
 function answer(correct){
-if(correct){points+=10;step++}
+if(correct){
+points += 10
+step++
+}
 save()
 location.reload()
 }
 
-// EXAM
+// ================= EXTRACTS =================
+const extracts=[
+{
+text:"The crowd roared as the player surged forward. A wave of sound crashed across the stadium.",
+q:"How does the writer present the atmosphere? (8 marks)",
+model:"The verb 'surged' suggests powerful movement. The metaphor 'wave of sound' implies overwhelming noise."
+},
+{
+text:"The hallway was silent. Each step echoed, sharp and clear.",
+q:"How is tension created? (8 marks)",
+model:"The short sentence creates tension. The verb 'echoed' suggests isolation."
+},
+{
+text:"He crept through the darkness, his breath shallow and uneven.",
+q:"How is the character presented? (8 marks)",
+model:"The verb 'crept' suggests fear. The breathing shows anxiety."
+}
+]
+
+// ================= LOAD EXAM =================
 function loadExam(){
-let e=extracts[Math.floor(Math.random()*extracts.length)]
+let e = extracts[Math.floor(Math.random()*extracts.length)]
 
 document.getElementById("mc").style.display="none"
 document.getElementById("exam").style.display="block"
 
-document.getElementById("exam").innerHTML=`
-<p>${e.text}</p>
-<p><b>${e.q}</b></p>
-<textarea id="ans"></textarea>
-<button onclick="mark(\`${e.model}\`)">Submit</button>
-<div id="fb"></div>
-`
+let html = ""
+html += "<p>"+e.text+"</p>"
+html += "<p><b>"+e.q+"</b></p>"
+html += '<textarea id="ans"></textarea>'
+html += '<button onclick="mark(\''+e.model+'\')">Submit</button>'
+html += '<div id="fb"></div>'
+
+document.getElementById("exam").innerHTML = html
 }
 
-// MARKING
+// ================= MARK =================
 function mark(model){
-let raw=document.getElementById("ans").value.toLowerCase()
+
+let raw = document.getElementById("ans").value.toLowerCase()
 
 let hasQuote = raw.includes("'")
-let hasTech = /verb|metaphor|simile/.test(raw)
-let hasEffect = /suggest|implies|shows/.test(raw)
+let hasTech = raw.includes("metaphor") || raw.includes("simile") || raw.includes("verb")
+let hasEffect = raw.includes("suggest") || raw.includes("implies") || raw.includes("shows")
 
 let feedback=[]
 if(!hasQuote) feedback.push("Missing quote")
 if(!hasTech) feedback.push("Missing technique")
 if(!hasEffect) feedback.push("Missing explanation")
 
-let score=[hasQuote,hasTech,hasEffect].filter(Boolean).length
+let score = 0
+if(hasQuote) score++
+if(hasTech) score++
+if(hasEffect) score++
 
-document.getElementById("fb").innerHTML=`
-<div class="good">${raw}</div>
-<div class="improve">${feedback.join("<br>")||"Good work"}</div>
-<div class="model">${model}</div>
-
-<button onclick="nextStep()" style="margin-top:10px;">Next Question ➡️</button>
-`
-
-points+=score*10
-step=0
+points += score * 10
+step = 0
 save()
-}
-let raw=document.getElementById("ans").value.toLowerCase()
 
-let hasQuote = raw.includes("'")
-let hasTech = /verb|metaphor|simile/.test(raw)
-let hasEffect = /suggest|implies|shows/.test(raw)
+let html = ""
+html += '<div class="good">'+raw+'</div>'
+html += '<div class="improve">'+(feedback.length?feedback.join("<br>"):"Good work")+'</div>'
+html += '<div class="model">'+model+'</div>'
+html += '<button onclick="location.reload()" style="margin-top:10px;">Next ➡️</button>'
 
-let feedback=[]
-if(!hasQuote) feedback.push("Missing quote")
-if(!hasTech) feedback.push("Missing technique")
-if(!hasEffect) feedback.push("Missing explanation")
-
-let score=[hasQuote,hasTech,hasEffect].filter(Boolean).length
-
-document.getElementById("fb").innerHTML=`
-<div class="good">${raw}</div>
-<div class="improve">${feedback.join("<br>")||"Good work"}</div>
-<div class="model">${model}</div>
-`
-
-points+=score*10
-step=0
-save()
+document.getElementById("fb").innerHTML = html
 }
 
-// SAVE
+// ================= SAVE =================
 function save(){
 localStorage.setItem("points",points)
 localStorage.setItem("step",step)
+}
+
+// ================= LOAD =================
+function load(){
+loadRewards()
+if(step<3){
+loadMC()
+}else{
+loadExam()
+}
 }
 
 load()
